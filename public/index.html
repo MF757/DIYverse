@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DIYverse – DIY projects</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">DIYverse</a>
+      <nav class="nav">
+        <a href="/" class="nav-link nav-link--active">Home</a>
+        <a href="#projects" class="nav-link">Projects</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero__title">DIY projects, shared</h1>
+        <p class="hero__lead">Browse public projects or sign in to add your own.</p>
+      </div>
+    </section>
+
+    <section id="projects" class="section projects-section">
+      <div class="container">
+        <h2 class="section__title">Public projects</h2>
+        <div id="projects-list" class="projects-list" role="list">
+          <!-- Filled by app.js: list of project cards or status message -->
+          <p id="projects-status" class="projects-status">Loading…</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer__copy">DIYverse – Backend: Supabase</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+.section {
+  padding-top: var(--space-md);
+}
+
+.form {
+  margin-bottom: var(--space-lg);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.signInHint {
+  margin: 0 0 var(--space-lg);
+  color: var(--color-text-muted);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comment,
+.reply {
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-md);
+}
+
+.reply {
+  margin-left: var(--space-xl);
+}
+
+.commentHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.author {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.author:hover {
+  color: var(--color-primary);
+}
+
+.time {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.body {
+  margin: 0 0 var(--space-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.commentFooter {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  color: var(--color-primary);
+}
+
+.actionBtn.liked {
+  color: var(--color-primary);
+}
+
+.replies {
+  margin-top: var(--space-md);
+}

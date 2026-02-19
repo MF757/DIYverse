@@ -1,0 +1,56 @@
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 0 0 var(--space-xl);
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.checkboxRow label {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.error {
+  padding: var(--space-md);
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-md);
+}
+
+.actions {
+  margin-top: var(--space-md);
+}

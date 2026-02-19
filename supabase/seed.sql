@@ -1,0 +1,2 @@
+-- Optional: add seed data for local development
+-- Example: INSERT INTO public.profiles (...) VALUES (...);

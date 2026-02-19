@@ -1,0 +1,216 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.modeSelect {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.modeOption {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--space-lg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.modeOption[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modeOption:hover {
+  border-color: var(--color-primary);
+}
+
+.modeOption.selected {
+  border-color: var(--color-primary);
+  background-color: rgba(37, 99, 235, 0.04);
+}
+
+.modeOption:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.modeTitle {
+  margin: 0 0 var(--space-xs);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.modeDesc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* Structured steps */
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.stepCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  background-color: var(--color-surface);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.stepNum {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.stepActions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.stepBody {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.stepImgWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.stepImg {
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background-color: var(--color-bg);
+}
+
+.removeImgBtn {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.removeImgBtn:hover {
+  color: var(--color-error);
+}
+
+.stepImgPlaceholder {
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 4/3;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.stepImgPlaceholder:hover {
+  border-color: var(--color-primary);
+}
+
+.addStepBtn {
+  padding: var(--space-md) var(--space-lg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.addStepBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Custom upload */
+.uploadZone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-xl);
+  text-align: center;
+  cursor: pointer;
+}
+
+.uploadZone:hover {
+  border-color: var(--color-primary);
+}
+
+.uploadedFile {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--color-bg);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.removeBtn {
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.removeBtn:hover {
+  color: var(--color-error);
+}
+
+.materialSelect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.materialChip {
+  padding: 2px var(--space-sm);
+  font-size: 0.8125rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-surface);
+  cursor: pointer;
+}
+
+.materialChip.selected {
+  border-color: var(--color-primary);
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary);
+}
+
+.materialLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--space-xs);
+  color: var(--color-text-muted);
+}

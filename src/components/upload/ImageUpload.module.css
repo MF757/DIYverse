@@ -1,0 +1,107 @@
+.zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-xl);
+  text-align: center;
+  background-color: var(--color-bg);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.zone:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(37, 99, 235, 0.04);
+}
+
+.zone.dragOver {
+  border-color: var(--color-primary);
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.zone.hasImages {
+  padding: var(--space-md);
+  min-height: 120px;
+}
+
+.zoneText {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.zone.hasImages .zoneText {
+  display: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+.itemImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.itemBadge {
+  position: absolute;
+  top: var(--space-xs);
+  left: var(--space-xs);
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 4px;
+}
+
+.itemActions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-xs);
+  display: flex;
+  gap: var(--space-xs);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+}
+
+.itemBtn {
+  flex: 1;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.itemBtn:hover {
+  background-color: white;
+}
+
+.addMore {
+  margin-top: var(--space-md);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.error {
+  margin-top: var(--space-sm);
+  font-size: 0.875rem;
+  color: var(--color-error);
+}

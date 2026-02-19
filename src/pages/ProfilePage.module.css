@@ -1,0 +1,147 @@
+.page {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+  flex-wrap: wrap;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius);
+  background-color: var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.name {
+  margin: 0 0 var(--space-xs);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.bio {
+  margin: 0 0 var(--space-xs);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  max-width: 40ch;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.publishLink {
+  font-size: 0.9375rem;
+}
+
+.section {
+  margin-top: var(--space-xl);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-lg);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-lg);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.status,
+.error {
+  margin: 0 0 var(--space-md);
+}
+
+.error {
+  padding: var(--space-md);
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-radius: var(--radius);
+}
+
+.editBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 420px;
+  margin-bottom: var(--space-xl);
+}
+
+.avatarEdit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.avatarEditPreview {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  background-color: var(--color-border);
+}
+
+.avatarEditActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.bioCounter {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+.nameChangeHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}

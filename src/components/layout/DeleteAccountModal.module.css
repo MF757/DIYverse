@@ -1,0 +1,96 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-width: 400px;
+  width: 100%;
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.warning {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.instruction {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+.instruction strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-sm);
+}
+
+.confirmRow > div {
+  flex: 1;
+}
+
+.deleteToken {
+  flex-shrink: 0;
+  padding: 0 var(--space-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  background-color: var(--color-error);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.deleteToken:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  filter: brightness(1.05);
+}
+
+.deleteToken:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-top: var(--space-sm);
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-error);
+}

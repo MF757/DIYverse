@@ -1,0 +1,70 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: var(--space-2xl);
+}
+
+.header {
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.lead {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-xs);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.checkboxRow label {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.error {
+  padding: var(--space-md);
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-md);
+}
+
+.actions {
+  margin-top: var(--space-md);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+}
