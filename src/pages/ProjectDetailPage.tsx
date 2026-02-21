@@ -10,10 +10,8 @@ import { ShareButton } from '../components/project/ShareButton';
 import { CommentSection } from '../components/project/CommentSection';
 import { loadProjectBom, loadProjectInstructionSteps, loadProjectFiles, getProjectFilePublicUrl } from '../lib/projectData';
 import { supabase, publicSupabase } from '../lib/supabase/browserClient';
+import { getAvatarSrc } from '../lib/avatar';
 import styles from './ProjectDetailPage.module.css';
-
-const PLACEHOLDER_AVATAR_DATA_URL =
-  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="28" height="28"%3E%3Crect width="28" height="28" fill="%23e2e4e8"/%3E%3C/svg%3E';
 
 function formatProjectDate(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -31,6 +29,11 @@ export function ProjectDetailPage() {
   const [dbBom, setDbBom] = useState<MaterialItem[]>([]);
   const [dbSteps, setDbSteps] = useState<InstructionStep[]>([]);
   const [dbFiles, setDbFiles] = useState<FileRef[]>([]);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
+
+  useEffect(() => {
+    setAvatarLoadError(false);
+  }, [project?.owner_avatar_url]);
 
   useEffect(() => {
     if (!ownerId || !slug) {
@@ -349,13 +352,27 @@ export function ProjectDetailPage() {
                 <h1 className={styles.title}>{project.title}</h1>
                 <div className={styles.byline}>
                   <span className={styles.avatarWrap}>
-                    <img
-                      src={project.owner_avatar_url ?? PLACEHOLDER_AVATAR_DATA_URL}
-                      alt=""
-                      className={styles.avatar}
-                      width={28}
-                      height={28}
-                    />
+                    {(() => {
+                      const avatarSrc = getAvatarSrc(project.owner_avatar_url ?? null);
+                      const initial = (project.owner_display_name ?? '?').trim().slice(0, 1).toUpperCase() || '?';
+                      if (avatarSrc && !avatarLoadError) {
+                        return (
+                          <img
+                            src={avatarSrc}
+                            alt=""
+                            className={styles.avatar}
+                            width={28}
+                            height={28}
+                            onError={() => setAvatarLoadError(true)}
+                          />
+                        );
+                      }
+                      return (
+                        <span className={styles.avatarPlaceholder} aria-hidden>
+                          {initial}
+                        </span>
+                      );
+                    })()}
                   </span>
                   <span className={styles.bylineText}>
                     <Link to={`/profile/${project.owner_id}`} className={styles.authorLink}>{ownerName}</Link>

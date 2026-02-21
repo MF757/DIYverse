@@ -155,6 +155,9 @@ export function ProjectUploadPage() {
   const [editLoading, setEditLoading] = useState(!!editIdFromUrl);
   const [existingFileRefs, setExistingFileRefs] = useState<{ id: string; name: string; path: string; type: 'stl' | '3mf' | 'gerber' | 'pdf' | 'other' }[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmValue, setDeleteConfirmValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -463,6 +466,36 @@ export function ProjectUploadPage() {
 
   const isEdit = Boolean(editProjectId);
 
+  const performDelete = useCallback(async () => {
+    if (!editProjectId || deleting) return;
+    setDeleting(true);
+    setError(null);
+    const { error: deleteErr } = await supabase.from('projects').delete().eq('id', editProjectId);
+    setDeleting(false);
+    if (deleteErr) {
+      setError(deleteErr.message ?? 'Failed to delete project.');
+      return;
+    }
+    setDeleteConfirmOpen(false);
+    setDeleteConfirmValue('');
+    navigate('/profile', { replace: true });
+  }, [editProjectId, deleting, navigate]);
+
+  const openDeleteConfirm = useCallback(() => {
+    setDeleteConfirmValue('');
+    setError(null);
+    setDeleteConfirmOpen(true);
+  }, []);
+
+  const closeDeleteConfirm = useCallback(() => {
+    if (!deleting) {
+      setDeleteConfirmOpen(false);
+      setDeleteConfirmValue('');
+    }
+  }, [deleting]);
+
+  const deleteConfirmValid = deleteConfirmValue === 'DELETE';
+
   return (
     <Container>
       <div className={styles.page}>
@@ -601,10 +634,75 @@ export function ProjectUploadPage() {
             <Button type="submit" disabled={submitting}>
               {submitting ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish project')}
             </Button>
+            {isEdit && (
+              <Button
+                type="button"
+                variant="secondary"
+                className={styles.deleteBtn}
+                disabled={submitting}
+                onClick={openDeleteConfirm}
+              >
+                Delete project
+              </Button>
+            )}
           </div>
         </form>
         )}
       </div>
+
+      {deleteConfirmOpen && (
+        <div
+          className={styles.deleteBackdrop}
+          onClick={(e) => e.target === e.currentTarget && closeDeleteConfirm()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-project-title"
+        >
+          <div className={styles.deleteModal}>
+            <h2 id="delete-project-title" className={styles.deleteModalTitle}>
+              Delete project
+            </h2>
+            <p className={styles.deleteModalWarning}>
+              This will permanently delete this project and cannot be undone.
+            </p>
+            <p className={styles.deleteModalInstruction}>
+              Type <strong>DELETE</strong> below to confirm.
+            </p>
+            <div className={styles.deleteConfirmRow}>
+              <Input
+                type="text"
+                value={deleteConfirmValue}
+                onChange={(e) => setDeleteConfirmValue(e.target.value)}
+                placeholder="DELETE"
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                aria-label="Type DELETE to confirm"
+                disabled={deleting}
+              />
+            </div>
+            <div className={styles.deleteModalActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={closeDeleteConfirm}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className={styles.deleteConfirmBtn}
+                disabled={!deleteConfirmValid || deleting}
+                onClick={performDelete}
+              >
+                {deleting ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
