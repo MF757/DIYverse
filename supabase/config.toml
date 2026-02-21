@@ -1,7 +1,8 @@
 # Supabase config: stable, documented options only (commercial-grade)
 # https://supabase.com/docs/guides/cli/config
 
-project_id = "diyverse"
+# Set to your hosted project ref (from URL: https://XXXX.supabase.co)
+project_id = "dtvumpeiyfhkoatuqjmt"
 
 [api]
 enabled = true

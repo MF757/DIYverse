@@ -1,6 +1,7 @@
 /**
  * App config from environment. Single source: .env via Vite (VITE_*).
- * Only string and boolean. Reliable and scalable (same path in dev and production).
+ * Reliable types only: string and boolean (industrial-grade, same path in dev and production).
+ * No sign-in required for viewing content; anon key is sufficient for public reads.
  */
 
 function trimString(value: unknown): string {
@@ -15,10 +16,16 @@ const hasUrl: boolean = url.length > 0;
 const hasKey: boolean = anonKey.length > 0;
 const supabaseConfigured: boolean = hasUrl && hasKey;
 
-export const config = {
+export const config: {
+  supabaseConfigured: boolean;
+  supabaseUrlValue: string;
+  supabaseAnonKeyValue: string;
+  hasUrl: boolean;
+  hasKey: boolean;
+} = {
   supabaseConfigured,
   supabaseUrlValue: url,
   supabaseAnonKeyValue: anonKey,
   hasUrl,
   hasKey,
-} as const;
+};

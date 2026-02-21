@@ -1,5 +1,8 @@
+/* Wider content: use more of the viewport (industrial max 1280px) */
 .page {
   width: 100%;
+  max-width: 100%;
+  --max-width: 1280px;
   padding-top: var(--space-md);
   padding-bottom: var(--space-2xl);
 }
@@ -16,6 +19,13 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .layout {
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+}
+
 .twoCol {
   display: grid;
   grid-template-columns: 1fr;
@@ -24,7 +34,7 @@
 
 @media (min-width: 900px) {
   .twoCol {
-    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-columns: minmax(0, 1fr) 220px;
     gap: var(--space-2xl);
     align-items: start;
   }
@@ -41,17 +51,10 @@
   margin-bottom: var(--space-xl);
 }
 
-@media (min-width: 720px) {
-  .hero {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-    gap: var(--space-xl);
-    align-items: start;
-  }
-}
-
 .heroImageBlock {
   width: 100%;
   min-width: 0;
+  order: 1;
 }
 
 .heroHead {
@@ -59,12 +62,8 @@
   flex-direction: column;
   justify-content: flex-start;
   min-width: 0;
-}
-
-@media (min-width: 720px) {
-  .heroHead {
-    padding-top: var(--space-xs);
-  }
+  order: 2;
+  padding-top: var(--space-xs);
 }
 
 .title {
@@ -130,7 +129,7 @@
 .mainImageWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 2;
   background: var(--color-bg);
   border-radius: 10px;
   overflow: hidden;
@@ -144,22 +143,20 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  line-height: 1;
-  font-weight: 300;
   color: var(--color-text);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  box-shadow: var(--shadow);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .imageNavPrev:hover,
@@ -167,6 +164,13 @@
   background: var(--color-surface);
   color: var(--color-primary);
   border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.imageNavPrev:focus-visible,
+.imageNavNext:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .imageNavPrev {
@@ -227,20 +231,14 @@
   min-height: 200px;
 }
 
-.engagementUnderHead {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-sm);
-  align-items: stretch;
-  margin-top: var(--space-md);
+.shareBtnSidebar {
+  width: 100%;
+  margin-top: var(--space-sm);
 }
 
-.engagementUnderHead > *:first-child {
-  grid-column: 1 / -1;
-}
-
-.shareBtnGrid {
-  grid-column: 1 / -1;
+.shareBtnSidebar button:first-child {
+  width: 100%;
+  justify-content: center;
 }
 
 .status,
@@ -261,7 +259,7 @@
   margin-top: 0;
 }
 
-/* Sidebar */
+/* Sidebar: engagement (Like, Save, Share) in same order on the side */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -281,6 +279,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+}
+
+.sidebarSection[aria-label="Engagement"] {
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sidebarSection[aria-label="Engagement"] > *:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }
 
 .downloadBtn {
@@ -333,4 +342,113 @@
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--radius);
+}
+
+/* Instructions tab */
+.stepList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.stepItem {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  min-width: 1.5em;
+}
+
+.stepImageWrap {
+  margin-bottom: var(--space-sm);
+  max-width: 320px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.stepImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.stepDescription {
+  margin: 0 0 var(--space-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.stepMeta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* Files / Downloads tab */
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.fileLink {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.fileLink:hover {
+  text-decoration: underline;
+}
+
+.fileType {
+  margin-left: var(--space-xs);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* Components / BOM tab */
+.bomList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.bomItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.bomName {
+  font-weight: 500;
+}
+
+.bomQty {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.bomLink {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+}
+
+.bomLink:hover {
+  text-decoration: underline;
 }

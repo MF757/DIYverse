@@ -62,6 +62,14 @@ If you prefer to deploy from your machine:
 
 ---
 
+## Public access and cost
+
+- **No sign-in required to view content.** Home feed, project pages, and public profiles use the Supabase **anon key** only. Row Level Security (RLS) limits rows to public projects and profile display.
+- **No serverless/Edge for reads.** All data is fetched client-side from Supabase. Vercel only serves static assets and the SPA; no server or Edge invocations for viewing content, which keeps cost minimal and reliable.
+- Set only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for core content; other `VITE_*` vars are optional (e.g. AdSense, Search Console).
+
+---
+
 ## SPA routing
 
 `vercel.json` includes rewrites so all routes (e.g. `/profile/123`, `/project/...`) serve `index.html` and React Router works correctly.
@@ -73,3 +81,6 @@ If you prefer to deploy from your machine:
 
 - **Blank or broken app**  
   Confirm the same two env vars are set and that your Supabase project allows requests from the Vercel domain (e.g. in Auth URL settings if you use redirects).
+
+- **Discover page shows no projects**  
+  See [DISCOVER_TROUBLESHOOTING.md](DISCOVER_TROUBLESHOOTING.md) for a step-by-step list of causes and fixes (env vars, migrations, public projects, RLS).

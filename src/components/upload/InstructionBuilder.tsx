@@ -29,7 +29,7 @@ export function InstructionBuilder({
   const addStep = useCallback(() => {
     onStepsChange([
       ...steps,
-      { id: crypto.randomUUID(), description: '', materialIds: [], tools: [] },
+      { id: crypto.randomUUID(), description: '', materialIds: [], tools: [], imageUrl: null },
     ]);
   }, [steps, onStepsChange]);
 
@@ -151,7 +151,7 @@ export function InstructionBuilder({
                         type="button"
                         className={styles.removeImgBtn}
                         onClick={() => {
-                          updateStep(idx, { imageUrl: undefined });
+                          updateStep(idx, { imageUrl: null });
                           onStepImageChange?.(step.id, null);
                         }}
                         aria-label="Remove step image"

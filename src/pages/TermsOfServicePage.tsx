@@ -1,25 +1,35 @@
 import { Container } from '../components/ui';
 import styles from './TermsOfServicePage.module.css';
 
+/** Last updated date (ISO 8601) for legal pages. */
+const TERMS_LAST_UPDATED = '2026-02-19';
+
 export function TermsOfServicePage() {
   return (
     <Container className={styles.wrapper}>
       <article className={styles.article}>
         <h1 className={styles.title}>DIYverse – Terms of Service (TOS)</h1>
 
-        <p className={styles.updated}>Last updated: 18.02.2026</p>
+        <p className={styles.updated}>
+          Last updated: {new Date(TERMS_LAST_UPDATED).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+        </p>
 
         <p className={styles.intro}>
           These Terms of Service (&quot;TOS&quot;) constitute a legally binding agreement between
           DIYverse and every natural or legal person using the platform (&quot;User&quot;).
         </p>
         <p>
-          These TOS are drafted in accordance with German law and applicable European Union law.
-          Use of the platform is permitted only under these TOS.
+          These TOS are drafted in accordance with German law and applicable European Union law,
+          including Regulation (EU) 2022/2065 (Digital Services Act, &quot;DSA&quot;). Use of the
+          platform is permitted only under these TOS.
         </p>
 
-        <section className={styles.section}>
-          <h2>1. Provider Information</h2>
+        <section className={styles.section} aria-labelledby="provider-info">
+          <h2 id="provider-info">1. Provider Information (DSA Art. 11–13)</h2>
+          <p>
+            The provider of the intermediary service is identified below. This information is
+            provided in compliance with the Digital Services Act.
+          </p>
           <address className={styles.address}>
             Marius Faber
             <br />
@@ -28,6 +38,8 @@ export function TermsOfServicePage() {
             71106 Magstadt
             <br />
             Germany
+            <br />
+            Email: <a href="mailto:DIYverse@gmx.de">DIYverse@gmx.de</a>
           </address>
         </section>
 
@@ -122,29 +134,53 @@ export function TermsOfServicePage() {
           <p>Users retain ownership of their content.</p>
         </section>
 
-        <section className={styles.section}>
-          <h2>7. Platform Moderation and Removal Rights</h2>
-          <p>DIYverse may at its sole discretion:</p>
+        <section className={styles.section} aria-labelledby="moderation">
+          <h2 id="moderation">7. Content Moderation (DSA Art. 14)</h2>
+          <p>
+            The following describes DIYverse&apos;s content moderation policies, procedures,
+            measures, and tools in clear and unambiguous language.
+          </p>
+          <h3>7.1 Moderation measures and tools</h3>
+          <ul>
+            <li>
+              <strong>Human review:</strong> Content moderation decisions (removal, blocking,
+              account measures) are taken by qualified staff. No solely automated decision-making
+              is used to remove content or restrict accounts.
+            </li>
+            <li>
+              <strong>Technical measures:</strong> Technical means are used to receive and process
+              reports of illegal content and to remove or disable access to content once illegal
+              content is identified.
+            </li>
+            <li>
+              <strong>Policies applied:</strong> The User Content, Liability &amp; Legal
+              Compliance Policy and these TOS define prohibited content and conduct. Moderation
+              is carried out in a diligent, objective, and proportionate manner, with due regard
+              to fundamental rights including freedom of expression.
+            </li>
+          </ul>
+          <h3>7.2 Removal and other measures</h3>
+          <p>DIYverse may:</p>
           <ul>
             <li>Remove or block content</li>
             <li>Edit metadata for technical reasons</li>
             <li>Suspend or permanently delete accounts</li>
             <li>Restrict access</li>
           </ul>
-          <p>This may occur with or without prior notice.</p>
+          <p>This may occur with or without prior notice where permitted by law.</p>
           <p>There is no claim to restoration of removed content.</p>
-          <p>DIYverse may take such measures in particular where:</p>
+          <p>Measures may be taken in particular where:</p>
           <ul>
-            <li>Legal violations are suspected</li>
-            <li>Third-party complaints are received</li>
+            <li>Content is illegal or in breach of these TOS</li>
+            <li>Third-party complaints or reports are received</li>
             <li>Platform security is endangered</li>
             <li>Repeated policy breaches occur</li>
           </ul>
         </section>
 
-        <section className={styles.section}>
-          <h2>8. Notice-and-Takedown Procedure</h2>
-          <p>DIYverse provides mechanisms for reporting illegal content.</p>
+        <section className={styles.section} aria-labelledby="notice-takedown">
+          <h2 id="notice-takedown">8. Notice-and-Takedown Procedure</h2>
+          <p>DIYverse provides mechanisms for reporting illegal content (see also the Copyright Compliance Policy for copyright-specific reports).</p>
           <p>
             Upon obtaining actual knowledge of illegal content, DIYverse will remove or disable
             access without undue delay in accordance with the Digital Services Act.
@@ -152,8 +188,56 @@ export function TermsOfServicePage() {
           <p>Removal does not constitute acknowledgment of wrongdoing.</p>
         </section>
 
+        <section className={styles.section} aria-labelledby="complaints">
+          <h2 id="complaints">9. Internal Complaint-Handling System (DSA Art. 20)</h2>
+          <p>
+            Users affected by a decision taken in respect of their content or account (e.g.
+            removal of content, suspension or termination of account) may lodge a complaint
+            through DIYverse&apos;s internal complaint-handling system.
+          </p>
+          <ul>
+            <li>
+              <strong>Access:</strong> Complaints may be submitted electronically and free of
+              charge to the contact address below. The complaint system is available for at least
+              six (6) months after the decision.
+            </li>
+            <li>
+              <strong>Requirements:</strong> Complaints should be substantiated (reason and, where
+              applicable, reference to the content or decision concerned).
+            </li>
+            <li>
+              <strong>Handling:</strong> Complaints are handled in a timely, non-discriminatory,
+              and diligent manner. Decisions are supervised by qualified staff. If a complaint
+              contains sufficient grounds, the decision may be reversed.
+            </li>
+            <li>
+              <strong>Outcome:</strong> DIYverse will inform the complainant of the outcome
+              without undue delay and will provide information on out-of-court dispute settlement
+              options (see Section 10).
+            </li>
+          </ul>
+          <p>
+            Contact for complaints: <a href="mailto:DIYverse@gmx.de">DIYverse@gmx.de</a> (subject
+            line e.g. &quot;Complaint – content/account decision&quot;).
+          </p>
+        </section>
+
+        <section className={styles.section} aria-labelledby="dispute-settlement">
+          <h2 id="dispute-settlement">10. Out-of-Court Dispute Settlement (DSA Art. 21)</h2>
+          <p>
+            If a dispute arising from a decision taken by DIYverse is not resolved through the
+            internal complaint-handling system, users may refer the matter to a certified
+            out-of-court dispute settlement body.
+          </p>
+          <p>
+            Lists of certified bodies are published by EU Member States and the European
+            Commission. Users may consult these lists to select a body. DIYverse will cooperate
+            with certified bodies in accordance with applicable law.
+          </p>
+        </section>
+
         <section className={styles.section}>
-          <h2>9. No Warranty</h2>
+          <h2>11. No Warranty</h2>
           <p>DIYverse provides services &quot;as is&quot;.</p>
           <p>DIYverse does not guarantee:</p>
           <ul>
@@ -166,7 +250,7 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>10. Limitation of Liability</h2>
+          <h2>12. Limitation of Liability</h2>
           <p>DIYverse is liable without limitation only for:</p>
           <ul>
             <li>Intent</li>
@@ -185,7 +269,7 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>11. Availability and Technical Changes</h2>
+          <h2>13. Availability and Technical Changes</h2>
           <p>
             DIYverse may modify, suspend, or discontinue services at any time for technical,
             economic, or legal reasons.
@@ -194,7 +278,7 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>12. Account Termination</h2>
+          <h2>14. Account Termination</h2>
           <p>Users may terminate their account at any time.</p>
           <p>
             DIYverse may terminate accounts without notice for good cause, including:
@@ -208,14 +292,14 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>13. Data Protection</h2>
+          <h2>15. Data Protection</h2>
           <p>
             Processing of personal data is governed exclusively by the separate Privacy Policy.
           </p>
         </section>
 
         <section className={styles.section}>
-          <h2>14. Governing Law and Jurisdiction</h2>
+          <h2>16. Governing Law and Jurisdiction</h2>
           <p>
             These TOS are governed by the laws of the Federal Republic of Germany, excluding the
             UN Convention on Contracts for the International Sale of Goods (CISG).
@@ -227,7 +311,7 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>15. Severability Clause</h2>
+          <h2>17. Severability Clause</h2>
           <p>
             If individual provisions of these TOS are or become invalid, the remaining provisions
             remain unaffected.
@@ -235,14 +319,18 @@ export function TermsOfServicePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>16. Amendments</h2>
+          <h2>18. Amendments</h2>
           <p>DIYverse may amend these TOS where:</p>
           <ul>
             <li>Legal requirements change</li>
             <li>Regulatory obligations arise</li>
             <li>Platform functionality evolves</li>
           </ul>
-          <p>Users will be informed of material changes.</p>
+          <p>
+            Users will be informed of material changes in accordance with the DSA. Significant
+            changes to terms and conditions are communicated before they take effect where
+            required by law.
+          </p>
           <p>
             Continued use after notification constitutes acceptance unless the user objects within
             a reasonable period.

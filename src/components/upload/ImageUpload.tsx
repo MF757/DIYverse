@@ -1,9 +1,13 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import styles from './ImageUpload.module.css';
 
+/** New upload: file + previewUrl (blob). Existing: existingPath (storage path) + previewUrl (public URL). */
 export interface ImageFile {
   id: string;
-  file: File;
+  /** Present when the image is a new file upload. */
+  file?: File;
+  /** Present when the image is an existing storage path (edit mode). */
+  existingPath?: string;
   previewUrl: string;
 }
 
@@ -52,7 +56,11 @@ export function ImageUpload({
   imagesRef.current = images;
   useEffect(() => {
     return () => {
-      imagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      imagesRef.current.forEach((img) => {
+        if (img.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(img.previewUrl);
+        }
+      });
     };
   }, []);
 
@@ -116,7 +124,10 @@ export function ImageUpload({
   }, [disabled, processFiles]);
 
   const remove = (idx: number) => {
-    URL.revokeObjectURL(images[idx]?.previewUrl ?? '');
+    const prev = images[idx];
+    if (prev?.previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(prev.previewUrl);
+    }
     const next = images.filter((_, i) => i !== idx);
     onChange(next);
     if (thumbnailIndex >= next.length) {

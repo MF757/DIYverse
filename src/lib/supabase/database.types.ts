@@ -13,6 +13,8 @@ export type Json =
 
 export type AppRole = 'user' | 'moderator' | 'admin';
 
+export type ProjectFileType = 'stl' | '3mf' | 'gerber' | 'pdf' | 'other';
+
 export interface Database {
   public: {
     Tables: {
@@ -86,6 +88,150 @@ export interface Database {
           updated_at?: string;
         };
       };
+      project_components: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          quantity: string;
+          link: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          quantity?: string;
+          link?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          quantity?: string;
+          link?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+      };
+      project_instruction_steps: {
+        Row: {
+          id: string;
+          project_id: string;
+          sort_order: number;
+          description: string;
+          image_path: string | null;
+          tools: string[];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          sort_order?: number;
+          description: string;
+          image_path?: string | null;
+          tools?: string[];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          sort_order?: number;
+          description?: string;
+          image_path?: string | null;
+          tools?: string[];
+          created_at?: string;
+        };
+      };
+      project_instruction_step_components: {
+        Row: {
+          step_id: string;
+          component_id: string;
+        };
+        Insert: {
+          step_id: string;
+          component_id: string;
+        };
+        Update: {
+          step_id?: string;
+          component_id?: string;
+        };
+      };
+      project_files: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          storage_path: string;
+          file_type: ProjectFileType;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          storage_path: string;
+          file_type?: ProjectFileType;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          storage_path?: string;
+          file_type?: ProjectFileType;
+          created_at?: string;
+        };
+      };
+      project_comments: {
+        Row: {
+          id: string;
+          project_id: string;
+          profile_id: string;
+          parent_id: string | null;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          profile_id: string;
+          parent_id?: string | null;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          profile_id?: string;
+          parent_id?: string | null;
+          body?: string;
+          created_at?: string;
+        };
+      };
+      comment_likes: {
+        Row: {
+          id: string;
+          comment_id: string;
+          profile_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          comment_id: string;
+          profile_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          comment_id?: string;
+          profile_id?: string;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       projects_public_with_owner: {
@@ -107,6 +253,7 @@ export interface Database {
     Functions: Record<string, never>;
     Enums: {
       app_role: AppRole;
+      project_file_type: ProjectFileType;
     };
   };
 }

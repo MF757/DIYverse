@@ -50,12 +50,46 @@
   color: var(--color-text);
 }
 
+.errorWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
 .error {
   padding: var(--space-md);
   background-color: var(--color-error-bg);
   color: var(--color-error);
   border-radius: var(--radius);
-  margin-bottom: var(--space-lg);
+  flex: 1;
+  min-width: 0;
+}
+
+.refreshBtn {
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.refreshBtn:hover {
+  background-color: var(--color-bg);
+}
+
+.emptyWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.emptyWrap .status {
+  margin: 0;
 }
 
 .status {
@@ -70,4 +104,9 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.gridItem {
+  /* Ad slot occupies one grid cell like project cards */
+  min-width: 0;
 }

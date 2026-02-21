@@ -1,11 +1,34 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase/browserClient';
+import { useEffect, useMemo, useState } from 'react';
+import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 import { Container, Input } from '../components/ui';
 import { ProjectCard } from '../components/project/ProjectCard';
+import { AdSlot } from '../components/ads/AdSlot';
 import type { ProjectPublicRow } from '../types/project';
+import { getAdSenseConfig } from '../types/ads';
 import styles from './HomePage.module.css';
 
 type SortKey = 'newest' | 'oldest' | 'title';
+
+const AD_INTERVAL = 25;
+
+type FeedItem =
+  | { type: 'project'; project: ProjectPublicRow }
+  | { type: 'ad'; adIndex: number };
+
+function buildFeedItems(projects: ProjectPublicRow[], insertAds: boolean): FeedItem[] {
+  if (!insertAds || projects.length === 0) {
+    return projects.map((project) => ({ type: 'project' as const, project }));
+  }
+  const items: FeedItem[] = [];
+  for (let i = 0; i < projects.length; i++) {
+    items.push({ type: 'project', project: projects[i] });
+    const count = i + 1;
+    if (count % AD_INTERVAL === 0 && count < projects.length) {
+      items.push({ type: 'ad', adIndex: count / AD_INTERVAL - 1 });
+    }
+  }
+  return items;
+}
 
 export function HomePage() {
   const [projects, setProjects] = useState<ProjectPublicRow[]>([]);
@@ -13,32 +36,98 @@ export function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Public feed: works for unauthenticated users (anon). RLS limits rows to is_public = true.
+  // Feed: try public (anon) first; on error, signed-in users retry with authenticated client.
   useEffect(() => {
     let cancelled = false;
+    const selectCols = 'id, owner_id, title, slug, description, cover_url, is_public, created_at, updated_at, owner_display_name, owner_avatar_url';
+    const orderOpt = { ascending: sort === 'oldest' };
+
+    function parseRows(data: unknown): ProjectPublicRow[] {
+      const raw: unknown = data ?? [];
+      const arr: unknown[] = Array.isArray(raw) ? raw : [];
+      return arr.filter(
+        (row): row is ProjectPublicRow =>
+          row != null &&
+          typeof row === 'object' &&
+          typeof (row as ProjectPublicRow).id === 'string' &&
+          typeof (row as ProjectPublicRow).owner_id === 'string' &&
+          typeof (row as ProjectPublicRow).title === 'string' &&
+          typeof (row as ProjectPublicRow).slug === 'string'
+      );
+    }
 
     async function load() {
       setLoading(true);
       setError(null);
-      const { data, error: e } = await supabase
+      const { data, error: e } = await publicSupabase
         .from('projects_public_with_owner')
-        .select('id, owner_id, title, slug, description, cover_url, is_public, created_at, updated_at, owner_display_name, owner_avatar_url')
-        .order('created_at', { ascending: sort === 'oldest' });
+        .select(selectCols)
+        .order('created_at', orderOpt);
 
       if (cancelled) return;
-      if (e) {
-        setError(e.message);
-        setProjects([]);
+      if (!e && data != null) {
+        const list = parseRows(data);
+        const sorted = sort === 'title' ? [...list].sort((a, b) => a.title.localeCompare(b.title)) : list;
+        setProjects(sorted);
         setLoading(false);
         return;
       }
-      const raw: unknown = data ?? [];
-      const list: ProjectPublicRow[] = Array.isArray(raw) ? (raw as ProjectPublicRow[]) : [];
-      if (sort === 'title') {
-        list = [...list].sort((a, b) => a.title.localeCompare(b.title));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (user) {
+        const { data: authData, error: authErr } = await supabase
+          .from('projects_public_with_owner')
+          .select(selectCols)
+          .order('created_at', orderOpt);
+        if (cancelled) return;
+        if (!authErr && authData != null) {
+          const list = parseRows(authData);
+          const sorted = sort === 'title' ? [...list].sort((a, b) => a.title.localeCompare(b.title)) : list;
+          setProjects(sorted);
+          setError(null);
+          setLoading(false);
+          return;
+        }
       }
-      setProjects(list);
+      const fallbackClient = user ? supabase : publicSupabase;
+      const { data: projRows, error: projErr } = await fallbackClient
+        .from('projects')
+        .select('id, owner_id, title, slug, description, cover_url, is_public, created_at, updated_at')
+        .eq('is_public', true)
+        .order('created_at', orderOpt);
+      if (cancelled) return;
+      if (!projErr && Array.isArray(projRows)) {
+        const ownerIds: string[] = [...new Set((projRows as { owner_id: string }[]).map((r) => r.owner_id))];
+        const profileMap = new Map<string, { display_name: string | null; avatar_url: string | null }>();
+        if (ownerIds.length > 0) {
+          const { data: profileRows } = await fallbackClient
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', ownerIds);
+          if (!cancelled && profileRows)
+            profileRows.forEach((p: { id: string; display_name: string | null; avatar_url: string | null }) => {
+              profileMap.set(p.id, { display_name: p.display_name, avatar_url: p.avatar_url });
+            });
+        }
+        if (cancelled) return;
+        const list: ProjectPublicRow[] = (projRows as { id: string; owner_id: string; title: string; slug: string; description: string | null; cover_url: string | null; is_public: boolean; created_at: string; updated_at: string }[]).map((r) => {
+          const pr = profileMap.get(r.owner_id);
+          return {
+            ...r,
+            owner_display_name: pr?.display_name ?? null,
+            owner_avatar_url: pr?.avatar_url ?? null,
+          } as ProjectPublicRow;
+        });
+        const sorted = sort === 'title' ? [...list].sort((a, b) => a.title.localeCompare(b.title)) : list;
+        setProjects(sorted);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      setError(e?.message ?? 'Failed to load projects.');
+      setProjects([]);
       setLoading(false);
     }
 
@@ -46,7 +135,9 @@ export function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [sort]);
+  }, [sort, refreshTrigger]);
+
+  const refetch = () => setRefreshTrigger((n) => n + 1);
 
   const filtered = search.trim()
     ? projects.filter(
@@ -55,6 +146,12 @@ export function HomePage() {
           (p.description?.toLowerCase().includes(search.toLowerCase()) ?? false)
       )
     : projects;
+
+  const adConfig = useMemo(() => getAdSenseConfig(), []);
+  const feedItems = useMemo(
+    () => buildFeedItems(filtered, adConfig !== null),
+    [filtered, adConfig]
+  );
 
   return (
     <div className={styles.page}>
@@ -94,24 +191,47 @@ export function HomePage() {
           </div>
 
           {error && (
-            <div className={styles.error} role="alert">
-              {error}
+            <div className={styles.errorWrap}>
+              <div className={styles.error} role="alert">
+                {typeof error === 'string' && error.includes('VITE_SUPABASE')
+                  ? 'Content cannot be loaded. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see .env.example).'
+                  : error}
+              </div>
+              <button type="button" onClick={refetch} className={styles.refreshBtn} aria-label="Retry loading projects">
+                Refresh
+              </button>
             </div>
           )}
 
           {loading ? (
             <p className={styles.status}>Loading…</p>
-          ) : filtered.length === 0 ? (
-            <p className={styles.status}>
-              {search.trim() ? 'No projects match your search.' : 'No public projects yet.'}
-            </p>
+          ) : error ? null : filtered.length === 0 ? (
+            <div className={styles.emptyWrap}>
+              <p className={styles.status}>
+                {search.trim() ? 'No projects match your search.' : 'No public projects yet.'}
+              </p>
+              <button type="button" onClick={refetch} className={styles.refreshBtn} aria-label="Refresh feed">
+                Refresh
+              </button>
+            </div>
           ) : (
             <ul className={styles.grid} role="list">
-              {filtered.map((project) => (
-                <li key={project.id}>
-                  <ProjectCard project={project} />
-                </li>
-              ))}
+              {feedItems.map((item) =>
+                item.type === 'project' ? (
+                  <li key={item.project.id}>
+                    <ProjectCard project={item.project} />
+                  </li>
+                ) : (
+                  <li key={`ad-${item.adIndex}`} className={styles.gridItem}>
+                    {adConfig && (
+                      <AdSlot
+                        config={adConfig}
+                        slotKey={`feed-${item.adIndex}`}
+                      />
+                    )}
+                  </li>
+                )
+              )}
             </ul>
           )}
         </Container>

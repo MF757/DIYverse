@@ -18,6 +18,9 @@ export function SiteFooter() {
           <Link to="/terms-of-service" className={styles.link}>
             Terms of Service
           </Link>
+          <Link to="/copyright-compliance" className={styles.link}>
+            Copyright Compliance
+          </Link>
         </nav>
       </div>
     </footer>

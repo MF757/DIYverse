@@ -64,13 +64,13 @@ npm install
 npm run dev
 ```
 
-On Windows, if PowerShell reports *“script execution is disabled”*, use the CMD launcher instead (no policy change required):
+On Windows, if PowerShell reports *“script execution is disabled”*, use the current-directory prefix (required):
 
-```batch
-.\dev.cmd
+```powershell
+.\dev.bat
 ```
 
-Or allow scripts for your user once: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` (then `npm run dev` works in PowerShell).
+In Command Prompt or Explorer you can run `dev.bat` without the prefix. See `docs/WINDOWS_NPM_FIX.md` if npm reports script execution disabled.
 
 The frontend in `public/` shows a home page and a **Public projects** section. To load projects from Supabase, edit `public/config.js` and set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (same values as in `.env`). See `public/config.example.js` for the format.
 

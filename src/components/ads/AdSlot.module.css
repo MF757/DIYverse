@@ -1,0 +1,25 @@
+/* Ad slot container: one cell in the project grid, minimal and on-brand */
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: var(--space-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.slot {
+  display: block;
+  min-width: 280px;
+  min-height: 250px;
+  text-align: center;
+}
+
+.slot:empty {
+  /* Avoid visible empty state; ad script fills this or we show nothing */
+  min-height: 0;
+}

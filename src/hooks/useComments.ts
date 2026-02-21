@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase/browserClient';
+import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 
 export interface CommentRow {
   id: string;
@@ -42,7 +42,8 @@ export function useComments(projectId: string | undefined, profileId: string | n
 
   const load = useCallback(async () => {
     if (!projectId) return;
-    const { data: commentRows } = await supabase
+    // Public reads: anon can see comments; use publicSupabase so no JWT is sent.
+    const { data: commentRows } = await publicSupabase
       .from('project_comments')
       .select('id, project_id, profile_id, parent_id, body, created_at')
       .eq('project_id', projectId)
@@ -55,16 +56,16 @@ export function useComments(projectId: string | undefined, profileId: string | n
     }
 
     const profileIds = [...new Set(commentRows.map((c) => c.profile_id))];
-    const { data: profiles } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', profileIds);
+    const { data: profiles } = await publicSupabase.from('profiles').select('id, display_name, avatar_url').in('id', profileIds);
     const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
     const commentIds = commentRows.map((c) => c.id);
     const { data: likes } = profileId
-      ? await supabase.from('comment_likes').select('comment_id').eq('profile_id', profileId).in('comment_id', commentIds)
+      ? await publicSupabase.from('comment_likes').select('comment_id').eq('profile_id', profileId).in('comment_id', commentIds)
       : { data: [] };
     const likedIds = new Set((likes ?? []).map((l) => l.comment_id));
 
-    const { data: likeCounts } = await supabase
+    const { data: likeCounts } = await publicSupabase
       .from('comment_likes')
       .select('comment_id')
       .in('comment_id', commentIds);

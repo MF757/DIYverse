@@ -1,6 +1,6 @@
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '../lib/supabase/browserClient';
+import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 import { Container } from '../components/ui';
 import { ProjectCard } from '../components/project/ProjectCard';
 import { Button, Input, Textarea } from '../components/ui';
@@ -51,6 +51,7 @@ export function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -123,7 +124,7 @@ export function ProfilePage() {
         return;
       }
 
-      const { data: p } = await supabase
+      const { data: p } = await publicSupabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -138,7 +139,7 @@ export function ProfilePage() {
       setProfile(p);
       setIsOwnProfile(!!user && (await supabase.from('profiles').select('id').eq('auth_user_id', user.id).single()).data?.id === p.id);
 
-      const { data: projs } = await supabase
+      const { data: projs } = await publicSupabase
         .from('projects_public_with_owner')
         .select('*')
         .eq('owner_id', userId)
@@ -238,6 +239,10 @@ export function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEditProject = (project: ProjectPublicRow) => {
+    navigate(`/publish?edit=${project.id}`);
   };
 
   if (!userId && !loading && !profile) {
@@ -396,7 +401,11 @@ export function ProfilePage() {
             <ul className={styles.grid} role="list">
               {projects.map((project) => (
                 <li key={project.id}>
-                  <ProjectCard project={project} />
+                  <ProjectCard
+                    project={project}
+                    showEditAction={isOwnProfile}
+                    onEditClick={handleEditProject}
+                  />
                 </li>
               ))}
             </ul>

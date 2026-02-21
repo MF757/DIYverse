@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase/browserClient';
 import { getStoragePath } from '../lib/storage';
 import { Container, Button, Input, Textarea } from '../components/ui';
@@ -12,13 +12,25 @@ import {
   TITLE_MAX_LENGTH,
   SLUG_MAX_LENGTH,
   serializeDescriptionWithMetadata,
+  parseDescriptionWithMetadata,
   type ProjectMetadata,
   type MaterialItem,
   type InstructionStep,
+  type FileRef,
 } from '../types/projectUpload';
 import type { ImageFile } from '../components/upload/ImageUpload';
 import type { PendingFile } from '../components/upload/FileUpload';
+import {
+  loadProjectBom,
+  loadProjectInstructionSteps,
+  loadProjectFiles,
+  saveProjectBom,
+  saveProjectInstructionSteps,
+  saveProjectFiles,
+} from '../lib/projectData';
 import styles from './ProjectUploadPage.module.css';
+
+const PROJECT_ASSETS_BUCKET = 'project-assets';
 
 const DRAFT_KEY = 'diyverse-project-draft';
 
@@ -83,15 +95,20 @@ function loadDraft(): Partial<FormState> | null {
       tags: Array.isArray(parsed.tags) ? parsed.tags.filter((t): t is string => typeof t === 'string') : [],
       materials: Array.isArray(parsed.materials)
         ? (parsed.materials as MaterialItem[]).map((m) => ({
-            ...m,
-            id: m.id || crypto.randomUUID(),
+            id: typeof m.id === 'string' ? m.id : crypto.randomUUID(),
+            name: typeof m.name === 'string' ? m.name : '',
+            quantity: typeof m.quantity === 'string' ? m.quantity : '1',
+            link: m.link != null && typeof m.link === 'string' ? m.link : null,
           }))
         : [],
       instructionMode: parsed.instructionMode === 'upload' ? 'upload' : 'maker',
       instructionSteps: Array.isArray(parsed.instructionSteps)
         ? (parsed.instructionSteps as InstructionStep[]).map((s) => ({
-            ...s,
-            id: s.id || crypto.randomUUID(),
+            id: typeof s.id === 'string' ? s.id : crypto.randomUUID(),
+            description: typeof s.description === 'string' ? s.description : '',
+            materialIds: Array.isArray(s.materialIds) ? s.materialIds.filter((x): x is string => typeof x === 'string') : [],
+            tools: Array.isArray(s.tools) ? s.tools.filter((x): x is string => typeof x === 'string') : [],
+            imageUrl: s.imageUrl != null && typeof s.imageUrl === 'string' ? s.imageUrl : null,
           }))
         : [],
       isPublic: parsed.isPublic !== false,
@@ -126,18 +143,147 @@ function saveDraft(state: FormState) {
 
 export function ProjectUploadPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editIdFromUrl = searchParams.get('edit');
+
   const [form, setForm] = useState<FormState>(() => {
+    if (editIdFromUrl) return initialForm;
     const draft = loadDraft();
     return draft ? { ...initialForm, ...draft } : initialForm;
   });
+  const [editProjectId, setEditProjectId] = useState<string | null>(editIdFromUrl ?? null);
+  const [editLoading, setEditLoading] = useState(!!editIdFromUrl);
+  const [existingFileRefs, setExistingFileRefs] = useState<{ id: string; name: string; path: string; type: 'stl' | '3mf' | 'gerber' | 'pdf' | 'other' }[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!editIdFromUrl) return;
+    let cancelled = false;
+    (async () => {
+      setEditLoading(true);
+      setError(null);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled || !user) {
+        setEditLoading(false);
+        if (!cancelled && editIdFromUrl) setError('You must be signed in to edit a project.');
+        return;
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+      if (cancelled || !profile) {
+        setEditLoading(false);
+        return;
+      }
+      const { data: project, error: projectErr } = await supabase
+        .from('projects')
+        .select('id, owner_id, title, slug, description, cover_url, is_public')
+        .eq('id', editIdFromUrl)
+        .eq('owner_id', profile.id)
+        .single();
+      if (cancelled) {
+        setEditLoading(false);
+        return;
+      }
+      if (projectErr || !project) {
+        setError('Project not found or you don’t have permission to edit it.');
+        setEditLoading(false);
+        return;
+      }
+      const { description: descText, metadata } = parseDescriptionWithMetadata(project.description ?? null);
+      const meta = metadata ?? {
+        tags: [],
+        imageUrls: [],
+        materials: [],
+        instructionMode: 'maker' as const,
+        instructionSteps: null,
+        instructionFileRef: null,
+        fileRefs: [],
+      };
+      const imageUrls: string[] = Array.isArray(meta.imageUrls) ? meta.imageUrls.filter((u): u is string => typeof u === 'string') : [];
+      const existingImages: ImageFile[] = imageUrls.map((path) => {
+        const { data } = supabase.storage.from(PROJECT_ASSETS_BUCKET).getPublicUrl(path);
+        return {
+          id: crypto.randomUUID(),
+          existingPath: path,
+          previewUrl: data?.publicUrl ?? path,
+        };
+      });
+      const steps: InstructionStep[] = Array.isArray(meta.instructionSteps)
+        ? meta.instructionSteps.map((s) => ({
+            id: typeof s.id === 'string' ? s.id : crypto.randomUUID(),
+            description: typeof s.description === 'string' ? s.description : '',
+            materialIds: Array.isArray(s.materialIds) ? s.materialIds.filter((x): x is string => typeof x === 'string') : [],
+            tools: Array.isArray(s.tools) ? s.tools.filter((x): x is string => typeof x === 'string') : [],
+            imageUrl: s.imageUrl != null && typeof s.imageUrl === 'string' ? s.imageUrl : null,
+          }))
+        : [];
+      const [dbMaterials, dbSteps, dbFiles] = await Promise.all([
+        loadProjectBom(project.id),
+        loadProjectInstructionSteps(project.id),
+        loadProjectFiles(project.id),
+      ]);
+      const materials: MaterialItem[] =
+        dbMaterials.length > 0
+          ? dbMaterials.map((m) => ({
+              id: m.id,
+              name: m.name,
+              quantity: m.quantity,
+              link: m.link,
+            }))
+          : Array.isArray(meta.materials)
+            ? meta.materials.map((m) => ({
+                id: typeof m.id === 'string' ? m.id : crypto.randomUUID(),
+                name: typeof m.name === 'string' ? m.name : '',
+                quantity: typeof m.quantity === 'string' ? m.quantity : '1',
+                link: m.link != null && typeof m.link === 'string' ? m.link : null,
+              }))
+            : [];
+      const instructionSteps: InstructionStep[] =
+        dbSteps.length > 0
+          ? dbSteps
+          : Array.isArray(meta.instructionSteps)
+            ? meta.instructionSteps.map((s) => ({
+                id: typeof s.id === 'string' ? s.id : crypto.randomUUID(),
+                description: typeof s.description === 'string' ? s.description : '',
+                materialIds: Array.isArray(s.materialIds) ? s.materialIds.filter((x): x is string => typeof x === 'string') : [],
+                tools: Array.isArray(s.tools) ? s.tools.filter((x): x is string => typeof x === 'string') : [],
+                imageUrl: s.imageUrl != null && typeof s.imageUrl === 'string' ? s.imageUrl : null,
+              }))
+            : [];
+      setExistingFileRefs(dbFiles.length > 0 ? dbFiles : []);
+      setForm({
+        title: project.title,
+        slug: project.slug,
+        description: descText,
+        images: existingImages,
+        thumbnailIndex: project.cover_url && imageUrls.indexOf(project.cover_url) >= 0
+          ? imageUrls.indexOf(project.cover_url)
+          : 0,
+        tags: Array.isArray(meta.tags) ? meta.tags.filter((t): t is string => typeof t === 'string') : [],
+        materials,
+        instructionMode: meta.instructionMode === 'upload' ? 'upload' : 'maker',
+        instructionSteps,
+        stepImageFiles: {},
+        customInstructionFile: null,
+        files: [],
+        isPublic: project.is_public,
+      });
+      setEditProjectId(project.id);
+      setEditLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [editIdFromUrl]);
+
+  useEffect(() => {
+    if (editProjectId) return;
     const t = setTimeout(() => saveDraft(form), 500);
     return () => clearTimeout(t);
-  }, [form]);
+  }, [form, editProjectId]);
 
   const updateSlugFromTitle = useCallback((newTitle: string) => {
     setForm((f) => ({
@@ -166,7 +312,7 @@ export function ProjectUploadPage() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      setError('You must be signed in to publish.');
+      setError(editProjectId ? 'You must be signed in to save changes.' : 'You must be signed in to publish.');
       setSubmitting(false);
       return;
     }
@@ -183,6 +329,39 @@ export function ProjectUploadPage() {
       return;
     }
 
+    let projectId: string;
+    if (editProjectId) {
+      projectId = editProjectId;
+    } else {
+      const descriptionFinal = serializeDescriptionWithMetadata(form.description.trim(), {
+        tags: form.tags,
+        imageUrls: [],
+        materials: form.materials.filter((m) => m.name.trim()),
+        instructionMode: form.instructionMode,
+        instructionSteps: form.instructionMode === 'maker' ? form.instructionSteps : null,
+        instructionFileRef: null,
+        fileRefs: [],
+      });
+      const { data: project, error: insertErr } = await supabase
+        .from('projects')
+        .insert({
+          owner_id: profile.id,
+          title: form.title.trim(),
+          slug: form.slug.trim().toLowerCase(),
+          description: descriptionFinal || null,
+          cover_url: null,
+          is_public: form.isPublic,
+        })
+        .select('id')
+        .single();
+      if (insertErr || !project) {
+        setError(insertErr?.message ?? 'Failed to create project.');
+        setSubmitting(false);
+        return;
+      }
+      projectId = project.id;
+    }
+
     const metadata: ProjectMetadata = {
       tags: form.tags,
       imageUrls: [],
@@ -193,50 +372,21 @@ export function ProjectUploadPage() {
       fileRefs: [],
     };
 
-    const descriptionFinal = serializeDescriptionWithMetadata(form.description.trim(), metadata);
-
-    const { data: project, error: insertErr } = await supabase
-      .from('projects')
-      .insert({
-        owner_id: profile.id,
-        title: form.title.trim(),
-        slug: form.slug.trim().toLowerCase(),
-        description: descriptionFinal || null,
-        cover_url: null,
-        is_public: form.isPublic,
-      })
-      .select('id')
-      .single();
-
-    if (insertErr || !project) {
-      setError(insertErr?.message ?? 'Failed to create project.');
-      setSubmitting(false);
-      return;
-    }
-
-    const projectId = project.id;
     let coverUrl: string | null = null;
-
     if (form.images.length > 0) {
-      const thumb = form.images[form.thumbnailIndex];
-      const imgName = uniqueFilename(thumb.file.name);
-      const path = getStoragePath(projectId, 'images', imgName);
-      const { error: uploadErr } = await supabase.storage
-        .from('project-assets')
-        .upload(path, thumb.file, { upsert: true });
-
-      if (!uploadErr) {
-        coverUrl = path;
-        metadata.imageUrls = [path];
-        for (let i = 0; i < form.images.length; i++) {
-          if (i === form.thumbnailIndex) continue;
-          const img = form.images[i];
+      for (let i = 0; i < form.images.length; i++) {
+        const img = form.images[i];
+        if (img.existingPath) {
+          metadata.imageUrls.push(img.existingPath);
+        } else if (img.file) {
           const name = uniqueFilename(img.file.name);
-          const p = getStoragePath(projectId, 'images', name);
-          const { error: e } = await supabase.storage.from('project-assets').upload(p, img.file, { upsert: true });
-          if (!e) metadata.imageUrls.push(p);
+          const path = getStoragePath(projectId, 'images', name);
+          const { error: e } = await supabase.storage.from(PROJECT_ASSETS_BUCKET).upload(path, img.file, { upsert: true });
+          if (!e) metadata.imageUrls.push(path);
         }
       }
+      const thumb = form.images[form.thumbnailIndex];
+      coverUrl = thumb?.existingPath ?? (metadata.imageUrls[form.thumbnailIndex] ?? null);
     }
 
     for (const pf of form.files) {
@@ -274,26 +424,54 @@ export function ProjectUploadPage() {
 
     const descWithMeta = serializeDescriptionWithMetadata(form.description.trim(), metadata);
 
+    const updatePayload: {
+      description: string | null;
+      cover_url: string | null;
+      title?: string;
+      slug?: string;
+      is_public?: boolean;
+      updated_at?: string;
+    } = { description: descWithMeta, cover_url: coverUrl };
+    if (editProjectId) {
+      updatePayload.title = form.title.trim();
+      updatePayload.slug = form.slug.trim().toLowerCase();
+      updatePayload.is_public = form.isPublic;
+      updatePayload.updated_at = new Date().toISOString();
+    }
+
     await supabase
       .from('projects')
-      .update({
-        description: descWithMeta,
-        cover_url: coverUrl,
-      })
+      .update(updatePayload)
       .eq('id', projectId);
 
-    localStorage.removeItem(DRAFT_KEY);
+    const componentIdMap = await saveProjectBom(projectId, form.materials.filter((m) => m.name.trim()));
+    if (form.instructionMode === 'maker' && form.instructionSteps.length > 0) {
+      await saveProjectInstructionSteps(projectId, form.instructionSteps, componentIdMap);
+    } else {
+      await saveProjectInstructionSteps(projectId, [], new Map());
+    }
+    const allFileRefs = [
+      ...existingFileRefs.map((f) => ({ id: f.id, name: f.name, path: f.path, type: f.type as FileRef['type'] })),
+      ...metadata.fileRefs,
+    ];
+    await saveProjectFiles(projectId, allFileRefs);
+
+    if (!editProjectId) localStorage.removeItem(DRAFT_KEY);
     setSubmitting(false);
     navigate(`/project/${profile.id}/${form.slug.trim().toLowerCase()}`);
   };
+
+  const isEdit = Boolean(editProjectId);
 
   return (
     <Container>
       <div className={styles.page}>
         <header className={styles.header}>
-          <h1 className={styles.title}>Create project</h1>
+          <h1 className={styles.title}>{isEdit ? 'Edit project' : 'Create project'}</h1>
           <p className={styles.lead}>
-            Share your DIY project with clear images, materials, and instructions.
+            {isEdit
+              ? 'Update your project details, images, and instructions.'
+              : 'Share your DIY project with clear images, materials, and instructions.'}
           </p>
         </header>
 
@@ -303,6 +481,11 @@ export function ProjectUploadPage() {
           </div>
         )}
 
+        {editLoading && (
+          <p className={styles.status} role="status">Loading project…</p>
+        )}
+
+        {!editLoading && (!editIdFromUrl || editProjectId) && (
         <form
           className={styles.form}
           onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
@@ -416,10 +599,11 @@ export function ProjectUploadPage() {
 
           <div className={styles.actions}>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Publishing…' : 'Publish project'}
+              {submitting ? (isEdit ? 'Saving…' : 'Publishing…') : (isEdit ? 'Save changes' : 'Publish project')}
             </Button>
           </div>
         </form>
+        )}
       </div>
     </Container>
   );

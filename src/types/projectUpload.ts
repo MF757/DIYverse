@@ -1,17 +1,18 @@
 /**
  * Project upload form data and metadata (maps to existing schema + embedded metadata).
+ * Types use only standard primitives: string, number, boolean, null, and arrays/objects of those.
  */
 
 export interface MaterialItem {
   id: string;
   name: string;
   quantity: string;
-  link?: string;
+  link: string | null;
 }
 
 export interface InstructionStep {
   id: string;
-  imageUrl?: string;  // preview blob URL or storage path after upload
+  imageUrl: string | null;
   description: string;
   materialIds: string[];
   tools: string[];
@@ -24,13 +25,18 @@ export interface FileRef {
   type: 'stl' | '3mf' | 'gerber' | 'pdf' | 'other';
 }
 
+export interface InstructionFileRef {
+  path: string;
+  name: string;
+}
+
 export interface ProjectMetadata {
   tags: string[];
   imageUrls: string[];
   materials: MaterialItem[];
   instructionMode: 'maker' | 'upload';
   instructionSteps: InstructionStep[] | null;
-  instructionFileRef: { path: string; name: string } | null;
+  instructionFileRef: InstructionFileRef | null;
   fileRefs: FileRef[];
 }
 

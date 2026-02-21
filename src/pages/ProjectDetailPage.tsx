@@ -3,11 +3,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { Container, Tabs } from '../components/ui';
 import type { ProjectPublicRow } from '../types/project';
 import { parseDescriptionWithMetadata } from '../types/projectUpload';
+import type { MaterialItem, InstructionStep, FileRef } from '../types/projectUpload';
 import { StorageImage } from '../components/project/StorageImage';
 import { ProjectEngagementButtons } from '../components/project/ProjectEngagementButtons';
 import { ShareButton } from '../components/project/ShareButton';
-import { useProjectEngagement } from '../hooks/useProjectEngagement';
-import { supabase } from '../lib/supabase/browserClient';
+import { CommentSection } from '../components/project/CommentSection';
+import { loadProjectBom, loadProjectInstructionSteps, loadProjectFiles, getProjectFilePublicUrl } from '../lib/projectData';
+import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 import styles from './ProjectDetailPage.module.css';
 
 const PLACEHOLDER_AVATAR_DATA_URL =
@@ -26,6 +28,9 @@ export function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [dbBom, setDbBom] = useState<MaterialItem[]>([]);
+  const [dbSteps, setDbSteps] = useState<InstructionStep[]>([]);
+  const [dbFiles, setDbFiles] = useState<FileRef[]>([]);
 
   useEffect(() => {
     if (!ownerId || !slug) {
@@ -38,9 +43,10 @@ export function ProjectDetailPage() {
     setError(null);
     let cancelled = false;
 
-    // Public project detail: works for unauthenticated users (anon). RLS limits to is_public = true.
+    // 1) Public load (anon): works for unauthenticated users; RLS limits to is_public = true.
+    // 2) If not found, try authenticated load so owner can see their project right after upload.
     async function load() {
-      const { data, error: e } = await supabase
+      const { data: publicData, error: publicErr } = await publicSupabase
         .from('projects_public_with_owner')
         .select('*')
         .eq('owner_id', ownerId)
@@ -48,11 +54,32 @@ export function ProjectDetailPage() {
         .maybeSingle();
 
       if (cancelled) return;
-      if (e) {
-        setError(e.message);
+      if (publicErr) {
+        setError(publicErr.message);
+        setProject(null);
+        setLoading(false);
+        return;
+      }
+      const fromPublic: ProjectPublicRow | null =
+        publicData != null && typeof publicData === 'object' ? (publicData as ProjectPublicRow) : null;
+      if (fromPublic) {
+        setProject(fromPublic);
+        setLoading(false);
+        return;
+      }
+      const { data: authData, error: authErr } = await supabase
+        .from('projects_public_with_owner')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .eq('slug', slug)
+        .maybeSingle();
+      if (cancelled) return;
+      if (authErr) {
+        setError(authErr.message);
         setProject(null);
       } else {
-        const row: ProjectPublicRow | null = data != null && typeof data === 'object' ? (data as ProjectPublicRow) : null;
+        const row: ProjectPublicRow | null =
+          authData != null && typeof authData === 'object' ? (authData as ProjectPublicRow) : null;
         setProject(row);
       }
       setLoading(false);
@@ -63,6 +90,29 @@ export function ProjectDetailPage() {
       cancelled = true;
     };
   }, [ownerId, slug]);
+
+  useEffect(() => {
+    if (!project?.id) {
+      setDbBom([]);
+      setDbSteps([]);
+      setDbFiles([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [bom, steps, files] = await Promise.all([
+        loadProjectBom(project.id),
+        loadProjectInstructionSteps(project.id),
+        loadProjectFiles(project.id),
+      ]);
+      if (!cancelled) {
+        setDbBom(bom);
+        setDbSteps(steps);
+        setDbFiles(files);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [project?.id]);
 
   const parsed = useMemo(
     () => parseDescriptionWithMetadata(project?.description ?? null),
@@ -78,6 +128,24 @@ export function ProjectDetailPage() {
     }
     return list;
   }, [project?.cover_url, parsed?.metadata?.imageUrls]);
+
+  const displayBom = useMemo(
+    () => (dbBom.length > 0 ? dbBom : parsed?.metadata?.materials ?? []),
+    [dbBom, parsed?.metadata?.materials]
+  );
+  const displaySteps = useMemo(
+    () => (dbSteps.length > 0 ? dbSteps : parsed?.metadata?.instructionSteps ?? []),
+    [dbSteps, parsed?.metadata?.instructionSteps]
+  );
+  const displayFiles = useMemo(
+    () => (dbFiles.length > 0 ? dbFiles : parsed?.metadata?.fileRefs ?? []),
+    [dbFiles, parsed?.metadata?.fileRefs]
+  );
+  const componentIdToName = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of displayBom) m.set(c.id, c.name);
+    return m;
+  }, [displayBom]);
 
   if (loading) {
     return (
@@ -126,9 +194,36 @@ export function ProjectDetailPage() {
       label: 'Instructions',
       panel: (
         <div className={styles.tabContent}>
-          <p className={styles.muted}>
-            Instructions section. Backend can be extended with a steps or markdown field.
-          </p>
+          {displaySteps.length === 0 ? (
+            <p className={styles.muted}>No instructions yet.</p>
+          ) : (
+            <ol className={styles.stepList}>
+              {displaySteps.map((step, idx) => (
+                <li key={step.id ?? idx} className={styles.stepItem}>
+                  <span className={styles.stepNum}>{idx + 1}.</span>
+                  <div>
+                    {step.imageUrl && (
+                      <div className={styles.stepImageWrap}>
+                        <StorageImage path={step.imageUrl} alt="" className={styles.stepImage} />
+                      </div>
+                    )}
+                    <p className={styles.stepDescription}>{step.description}</p>
+                    {step.tools && step.tools.length > 0 && (
+                      <p className={styles.stepMeta}>
+                        <strong>Tools:</strong> {step.tools.join(', ')}
+                      </p>
+                    )}
+                    {step.materialIds && step.materialIds.length > 0 && (
+                      <p className={styles.stepMeta}>
+                        <strong>Materials:</strong>{' '}
+                        {step.materialIds.map((id) => componentIdToName.get(id) ?? id).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       ),
     },
@@ -137,9 +232,26 @@ export function ProjectDetailPage() {
       label: 'Files / Downloads',
       panel: (
         <div className={styles.tabContent}>
-          <p className={styles.muted}>
-            Files and downloads. Backend can be extended with project_assets or file references.
-          </p>
+          {displayFiles.length === 0 ? (
+            <p className={styles.muted}>No files to download.</p>
+          ) : (
+            <ul className={styles.fileList}>
+              {displayFiles.map((f) => (
+                <li key={f.id}>
+                  <a
+                    href={getProjectFilePublicUrl(f.path)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.fileLink}
+                    download={f.name}
+                  >
+                    {f.name}
+                  </a>
+                  <span className={styles.fileType}>({f.type})</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       ),
     },
@@ -148,9 +260,23 @@ export function ProjectDetailPage() {
       label: 'Components / BOM',
       panel: (
         <div className={styles.tabContent}>
-          <p className={styles.muted}>
-            Bill of materials. Backend can be extended with BOM or components table.
-          </p>
+          {displayBom.length === 0 ? (
+            <p className={styles.muted}>No components or materials listed.</p>
+          ) : (
+            <ul className={styles.bomList}>
+              {displayBom.map((m) => (
+                <li key={m.id} className={styles.bomItem}>
+                  <span className={styles.bomName}>{m.name}</span>
+                  <span className={styles.bomQty}>{m.quantity}</span>
+                  {m.link ? (
+                    <a href={m.link} target="_blank" rel="noopener noreferrer" className={styles.bomLink}>
+                      Link
+                    </a>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       ),
     },
@@ -159,9 +285,7 @@ export function ProjectDetailPage() {
       label: 'Comments',
       panel: (
         <div className={styles.tabContent}>
-          <p className={styles.muted}>
-            Comments. Backend can be extended with a comments table.
-          </p>
+          <CommentSection projectId={project.id} />
         </div>
       ),
     },
@@ -185,7 +309,9 @@ export function ProjectDetailPage() {
                         onClick={() => setSelectedImageIndex((i) => (i <= 0 ? imageList.length - 1 : i - 1))}
                         aria-label="Previous image"
                       >
-                        ‹
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden={true}>
+                          <path d="M15 18l-6-6 6-6" />
+                        </svg>
                       </button>
                       <button
                         type="button"
@@ -193,7 +319,9 @@ export function ProjectDetailPage() {
                         onClick={() => setSelectedImageIndex((i) => (i >= imageList.length - 1 ? 0 : i + 1))}
                         aria-label="Next image"
                       >
-                        ›
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden={true}>
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
                       </button>
                     </>
                   )}
@@ -234,10 +362,6 @@ export function ProjectDetailPage() {
                     {projectDate && <span className={styles.date}>{projectDate}</span>}
                   </span>
                 </div>
-                <div className={styles.engagementUnderHead}>
-                  <ProjectEngagementButtons projectId={project.id} variant="sidebar" />
-                  <ShareButton url={shareUrl} title={project.title} className={styles.shareBtnGrid} />
-                </div>
               </div>
             </div>
 
@@ -252,13 +376,17 @@ export function ProjectDetailPage() {
           </div>
 
           <aside className={styles.sidebar} aria-label="Project actions">
-            <div className={styles.sidebarSection}>
-              {parsed.metadata?.fileRefs && parsed.metadata.fileRefs.length > 0 && (
+            <div className={styles.sidebarSection} aria-label="Engagement">
+              <ProjectEngagementButtons projectId={project.id} variant="sidebar" />
+              <ShareButton url={shareUrl} title={project.title} className={styles.shareBtnSidebar} />
+            </div>
+            {displayFiles.length > 0 && (
+              <div className={styles.sidebarSection}>
                 <a href="#files" className={styles.downloadBtn} onClick={() => setActiveTab('files')}>
                   Download all files
                 </a>
-              )}
-            </div>
+              </div>
+            )}
           </aside>
         </div>
       </Container>

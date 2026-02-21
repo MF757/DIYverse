@@ -18,7 +18,7 @@ export function BOMEditor({ materials, onChange, disabled }: BOMEditorProps) {
   const add = () => {
     onChange([
       ...materials,
-      { id: crypto.randomUUID(), name: '', quantity: '1' },
+      { id: crypto.randomUUID(), name: '', quantity: '1', link: null },
     ]);
   };
 
@@ -63,7 +63,7 @@ export function BOMEditor({ materials, onChange, disabled }: BOMEditorProps) {
               className={`${styles.input} ${styles.rowLink}`}
               placeholder="Link (optional)"
               value={m.link ?? ''}
-              onChange={(e) => update(idx, { link: e.target.value || undefined })}
+              onChange={(e) => update(idx, { link: e.target.value || null })}
               disabled={disabled}
             />
             <button
