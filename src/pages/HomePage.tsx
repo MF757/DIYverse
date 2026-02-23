@@ -5,7 +5,12 @@ import { ProjectCard } from '../components/project/ProjectCard';
 import { AdSlot } from '../components/ads/AdSlot';
 import type { ProjectPublicRow } from '../types/project';
 import { getAdSenseConfig } from '../types/ads';
+import { setPageMeta, buildWebSiteJsonLd } from '../lib/seo';
 import styles from './HomePage.module.css';
+
+const HOME_TITLE = 'Discover DIY projects – DIYverse';
+const HOME_DESCRIPTION =
+  'Browse and share DIY projects. Electronics, microcontrollers, maker builds — build guides, materials lists, and step-by-step instructions from the community.';
 
 type SortKey = 'newest' | 'oldest' | 'title';
 
@@ -37,6 +42,15 @@ export function HomePage() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    return setPageMeta({
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
+      canonicalPath: '/',
+      jsonLd: buildWebSiteJsonLd(),
+    });
+  }, []);
 
   // Feed: try public (anon) first; on error, signed-in users retry with authenticated client.
   useEffect(() => {

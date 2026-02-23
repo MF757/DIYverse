@@ -1,7 +1,21 @@
+import { useEffect } from 'react';
 import { Container } from '../components/ui';
+import { setPageMeta } from '../lib/seo';
 import styles from './UserContentPolicyPage.module.css';
 
+const PAGE_TITLE = 'User Content & Legal Compliance Policy – DIYverse';
+const META_DESCRIPTION =
+  'DIYverse user content, liability and legal compliance policy. Rules for uploaded projects and prohibited content.';
+
 export function UserContentPolicyPage() {
+  useEffect(() => {
+    return setPageMeta({
+      title: PAGE_TITLE,
+      description: META_DESCRIPTION,
+      canonicalPath: '/user-content-policy',
+    });
+  }, []);
+
   return (
     <Container className={styles.wrapper}>
       <article className={styles.article}>

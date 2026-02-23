@@ -37,6 +37,47 @@ Connect your GitHub repo to Vercel so every push can deploy automatically.
 
 ---
 
+## How to update Vercel yourself (step-by-step)
+
+Use this whenever you change code and want the live site to update. Steps use standard Git commands and a single branch (`main`).
+
+1. **Open a terminal**  
+   In your project folder (e.g. `c:\DIYverse`).
+
+2. **See what changed**  
+   Run:  
+   `git status`  
+   You’ll see a list of modified files (and optionally untracked files). Ignore `.cursor/` and `.env`; don’t commit secrets.
+
+3. **Stage the files you want to deploy**  
+   - To stage everything except `.cursor/`:  
+     `git add -A`  
+     then  
+     `git reset -- .cursor/`  
+   - Or stage specific files only, e.g.:  
+     `git add src/`
+
+4. **Commit with a short message**  
+   Run:  
+   `git commit -m "Your message here"`  
+   Use a clear, short message (e.g. “Fix avatar on project page”, “Add delete project button”).
+
+5. **Push to GitHub**  
+   Run:  
+   `git push origin main`  
+   (Use `main` if that’s your default branch; otherwise use your branch name.)
+
+6. **Let Vercel build**  
+   After the push, Vercel will start a new deployment automatically.  
+   - Open [vercel.com](https://vercel.com) → your project → **Deployments**.  
+   - Wait until the latest deployment shows **Ready** (usually 1–2 minutes).  
+   - Your live site URL will then show the updated version.
+
+**Summary:**  
+`git status` → `git add ...` → `git commit -m "..."` → `git push origin main` → check Vercel dashboard until the deployment is **Ready**.
+
+---
+
 ## 2. Optional: Deploy from the CLI
 
 If you prefer to deploy from your machine:

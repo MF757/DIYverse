@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Container } from '../components/ui';
+import { setPageMeta } from '../lib/seo';
 import styles from './ImpressumPage.module.css';
 
 /**
@@ -6,7 +8,19 @@ import styles from './ImpressumPage.module.css';
  * Fill in all [REQUIRED] fields. Optional fields marked [OPTIONAL].
  * Data types: string, email, postal_address (street, postal_code, city, country).
  */
+const PAGE_TITLE = 'Impressum – DIYverse';
+const META_DESCRIPTION =
+  'Impressum and provider identification for DIYverse as required by §5 TMG / §5 DDG.';
+
 export function ImpressumPage() {
+  useEffect(() => {
+    return setPageMeta({
+      title: PAGE_TITLE,
+      description: META_DESCRIPTION,
+      canonicalPath: '/impressum',
+    });
+  }, []);
+
   return (
     <Container className={styles.wrapper}>
       <article className={styles.article}>

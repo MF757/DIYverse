@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container } from '../components/ui';
+import { setPageMeta } from '../lib/seo';
 import styles from './CopyrightCompliancePage.module.css';
 
 /** Last updated date (ISO 8601) for legal pages. */
@@ -7,7 +9,19 @@ const POLICY_LAST_UPDATED = '2026-02-19';
 
 const CONTACT_EMAIL = 'DIYverse@gmx.de';
 
+const PAGE_TITLE = 'Copyright Compliance Policy – DIYverse';
+const META_DESCRIPTION =
+  'Copyright compliance policy for DIYverse. DMCA-style process and rules for reporting infringing content.';
+
 export function CopyrightCompliancePage() {
+  useEffect(() => {
+    return setPageMeta({
+      title: PAGE_TITLE,
+      description: META_DESCRIPTION,
+      canonicalPath: '/copyright-compliance',
+    });
+  }, []);
+
   return (
     <Container className={styles.wrapper}>
       <article className={styles.article}>

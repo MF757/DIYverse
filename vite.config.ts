@@ -11,14 +11,18 @@ function sitemapBaseUrlPlugin() {
     name: 'sitemap-base-url',
     closeBundle() {
       const outDir = join(process.cwd(), 'dist');
-      const path = join(outDir, 'sitemap.xml');
-      try {
-        let content = readFileSync(path, 'utf8');
-        const baseUrl = process.env.VITE_APP_URL?.trim() || DEFAULT_SITE_URL;
-        content = content.replaceAll(SITEMAP_PLACEHOLDER, baseUrl);
-        writeFileSync(path, content);
-      } catch {
-        // sitemap may be missing if public dir layout differs
+      const baseUrl = process.env.VITE_APP_URL?.trim() || DEFAULT_SITE_URL;
+      for (const file of ['sitemap.xml', 'robots.txt']) {
+        const path = join(outDir, file);
+        try {
+          let content = readFileSync(path, 'utf8');
+          if (content.includes(SITEMAP_PLACEHOLDER)) {
+            content = content.replaceAll(SITEMAP_PLACEHOLDER, baseUrl);
+            writeFileSync(path, content);
+          }
+        } catch {
+          // file may be missing if public dir layout differs
+        }
       }
     },
   };

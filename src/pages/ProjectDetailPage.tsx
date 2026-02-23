@@ -11,6 +11,8 @@ import { CommentSection } from '../components/project/CommentSection';
 import { loadProjectBom, loadProjectInstructionSteps, loadProjectFiles, getProjectFilePublicUrl } from '../lib/projectData';
 import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 import { getAvatarSrc } from '../lib/avatar';
+import { setPageMeta, getBaseUrl, buildHowToJsonLd, buildCreativeWorkJsonLd } from '../lib/seo';
+import { isStoragePath } from '../lib/storage';
 import styles from './ProjectDetailPage.module.css';
 
 function formatProjectDate(iso: string | null | undefined): string {
@@ -93,6 +95,57 @@ export function ProjectDetailPage() {
       cancelled = true;
     };
   }, [ownerId, slug]);
+
+  // SEO: title, description, og:image, canonical, JSON-LD (when project is loaded)
+  useEffect(() => {
+    if (!project || !ownerId || !slug) return;
+    const canonicalPath = `/project/${ownerId}/${slug}`;
+    const title = `${project.title} – DIYverse`;
+    const description = (() => {
+      const { description: d } = parseDescriptionWithMetadata(project.description ?? null);
+      return d && d.trim() ? d.trim() : `DIY project: ${project.title}. View build guide and instructions on DIYverse.`;
+    })();
+    const imageUrl =
+      project.cover_url && isStoragePath(project.cover_url)
+        ? getProjectFilePublicUrl(project.cover_url)
+        : project.cover_url && project.cover_url.startsWith('http')
+          ? project.cover_url
+          : undefined;
+    const steps = (() => {
+      const { metadata } = parseDescriptionWithMetadata(project.description ?? null);
+      const list = metadata?.instructionSteps;
+      if (!Array.isArray(list) || list.length === 0) return undefined;
+      return list.map((s, i) => ({
+        name: `Step ${i + 1}`,
+        text: typeof s.description === 'string' ? s.description : '',
+      }));
+    })();
+    const url = `${getBaseUrl()}${canonicalPath}`;
+    const jsonLd =
+      steps && steps.length > 0
+        ? buildHowToJsonLd({
+            name: project.title,
+            description,
+            image: imageUrl,
+            url,
+            datePublished: project.created_at ?? undefined,
+            step: steps,
+          })
+        : buildCreativeWorkJsonLd({
+            name: project.title,
+            description,
+            image: imageUrl,
+            url,
+            datePublished: project.created_at ?? undefined,
+          });
+    return setPageMeta({
+      title,
+      description,
+      image: imageUrl,
+      canonicalPath,
+      jsonLd,
+    });
+  }, [project, ownerId, slug]);
 
   useEffect(() => {
     if (!project?.id) {

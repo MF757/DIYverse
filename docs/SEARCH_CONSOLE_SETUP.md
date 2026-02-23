@@ -42,8 +42,8 @@ The repo includes a static sitemap at `/sitemap.xml` that lists the home page an
    VITE_APP_URL=https://yourdomain.com
    ```
    Do not add a trailing slash. If unset, the sitemap uses `https://example.com`; replace that with your domain or set `VITE_APP_URL` and rebuild.
-2. Run `npm run build`. The build replaces the placeholder in `sitemap.xml` with `VITE_APP_URL`.
-3. After deployment, the sitemap will be available at `https://yourdomain.com/sitemap.xml`.
+2. Run `npm run build`. The build replaces the placeholder `{{SITE_URL}}` in both `sitemap.xml` and `robots.txt` with `VITE_APP_URL`. The same base URL is used for canonical and Open Graph URLs in the app.
+3. After deployment, the sitemap will be available at `https://yourdomain.com/sitemap.xml`. Crawlers can find it via `https://yourdomain.com/robots.txt`.
 
 ---
 
@@ -57,9 +57,11 @@ The repo includes a static sitemap at `/sitemap.xml` that lists the home page an
 The included sitemap lists:
 
 - `/` (home)
+- `/about`
 - `/impressum`
 - `/user-content-policy`
 - `/terms-of-service`
+- `/privacy-policy`
 - `/copyright-compliance`
 
 Project and profile URLs are dynamic; you can add more URLs via **URL Inspection** → **Request indexing**, or extend the build to generate a sitemap that includes project slugs from your database.

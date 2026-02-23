@@ -12,6 +12,8 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { UserContentPolicyPage } from './pages/UserContentPolicyPage';
 import { TermsOfServicePage } from './pages/TermsOfServicePage';
 import { CopyrightCompliancePage } from './pages/CopyrightCompliancePage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { AboutPage } from './pages/AboutPage';
 
 function App() {
   useEffect(() => {
@@ -31,6 +33,8 @@ function App() {
         <Route path="user-content-policy" element={<UserContentPolicyPage />} />
         <Route path="terms-of-service" element={<TermsOfServicePage />} />
         <Route path="copyright-compliance" element={<CopyrightCompliancePage />} />
+        <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="about" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -1,10 +1,25 @@
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Container } from '../components/ui';
+import { setPageMeta } from '../lib/seo';
 import styles from './TermsOfServicePage.module.css';
 
 /** Last updated date (ISO 8601) for legal pages. */
 const TERMS_LAST_UPDATED = '2026-02-19';
 
+const PAGE_TITLE = 'Terms of Service – DIYverse';
+const META_DESCRIPTION =
+  'Terms of Service for DIYverse. Legal agreement for using the DIY project sharing platform.';
+
 export function TermsOfServicePage() {
+  useEffect(() => {
+    return setPageMeta({
+      title: PAGE_TITLE,
+      description: META_DESCRIPTION,
+      canonicalPath: '/terms-of-service',
+    });
+  }, []);
+
   return (
     <Container className={styles.wrapper}>
       <article className={styles.article}>
@@ -294,7 +309,8 @@ export function TermsOfServicePage() {
         <section className={styles.section}>
           <h2>15. Data Protection</h2>
           <p>
-            Processing of personal data is governed exclusively by the separate Privacy Policy.
+            Processing of personal data is governed exclusively by the separate{' '}
+            <Link to="/privacy-policy">Privacy Policy</Link>.
           </p>
         </section>
 

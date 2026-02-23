@@ -9,6 +9,9 @@ export function SiteFooter() {
           <Link to="/" className={styles.link}>
             DIYverse
           </Link>
+          <Link to="/about" className={styles.link}>
+            About DIYverse
+          </Link>
           <Link to="/impressum" className={styles.link}>
             Impressum
           </Link>
@@ -20,6 +23,9 @@ export function SiteFooter() {
           </Link>
           <Link to="/copyright-compliance" className={styles.link}>
             Copyright Compliance
+          </Link>
+          <Link to="/privacy-policy" className={styles.link}>
+            Privacy Policy
           </Link>
         </nav>
       </div>
