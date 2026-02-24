@@ -22,6 +22,9 @@ export function Tabs({ tabs, activeId, onSelect, 'aria-label': ariaLabel, mobile
     mobileSplitAfterIndex >= 0 &&
     tabs.length > mobileSplitAfterIndex + 1;
 
+  const firstRowTabs = split ? tabs.slice(0, mobileSplitAfterIndex! + 1) : tabs;
+  const secondRowTabs = split ? tabs.slice(mobileSplitAfterIndex! + 1) : [];
+
   return (
     <div
       className={`${styles.tabs} ${split ? styles.tabsMobileSplit : ''}`.trim()}
@@ -29,20 +32,55 @@ export function Tabs({ tabs, activeId, onSelect, 'aria-label': ariaLabel, mobile
       aria-label={ariaLabel}
     >
       <div className={styles.tabList}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={activeId === tab.id}
-            aria-controls={`panel-${tab.id}`}
-            id={`tab-${tab.id}`}
-            className={`${styles.tab} ${activeId === tab.id ? styles.active : ''}`}
-            onClick={() => onSelect(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {split ? (
+          <>
+            {firstRowTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={activeId === tab.id}
+                aria-controls={`panel-${tab.id}`}
+                id={`tab-${tab.id}`}
+                className={`${styles.tab} ${activeId === tab.id ? styles.active : ''}`}
+                onClick={() => onSelect(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <div className={styles.tabListRow2Wrap}>
+              {secondRowTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeId === tab.id}
+                  aria-controls={`panel-${tab.id}`}
+                  id={`tab-${tab.id}`}
+                  className={`${styles.tab} ${activeId === tab.id ? styles.active : ''}`}
+                  onClick={() => onSelect(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeId === tab.id}
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              className={`${styles.tab} ${activeId === tab.id ? styles.active : ''}`}
+              onClick={() => onSelect(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))
+        )}
       </div>
       {tabs.map((tab) => (
         <div

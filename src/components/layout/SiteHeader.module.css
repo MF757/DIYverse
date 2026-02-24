@@ -23,6 +23,11 @@
     max-width: none;
     width: 100%;
   }
+
+  .nav {
+    margin-left: auto;
+    justify-content: flex-end;
+  }
 }
 
 .logo {

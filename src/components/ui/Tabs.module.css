@@ -17,12 +17,17 @@
     gap: 0;
   }
 
-  .tabsMobileSplit .tabList .tab:nth-child(4) {
-    grid-column: 2;
+  .tabsMobileSplit .tabListRow2Wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-lg);
   }
 
-  .tabsMobileSplit .tabList .tab:nth-child(5) {
-    grid-column: 3;
+  .tabsMobileSplit .tabListRow2Wrap .tab {
+    margin-bottom: -1px;
   }
 }
 
