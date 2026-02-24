@@ -441,6 +441,7 @@ export function ProjectDetailPage() {
                 activeId={activeTab}
                 onSelect={setActiveTab}
                 aria-label="Project sections"
+                mobileSplitAfterIndex={2}
               />
             </div>
           </div>

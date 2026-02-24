@@ -9,6 +9,23 @@
   margin-bottom: var(--space-lg);
 }
 
+@media (max-width: 768px) {
+  .tabsMobileSplit .tabList {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: end;
+    gap: 0;
+  }
+
+  .tabsMobileSplit .tabList .tab:nth-child(4) {
+    grid-column: 2;
+  }
+
+  .tabsMobileSplit .tabList .tab:nth-child(5) {
+    grid-column: 3;
+  }
+}
+
 .tab {
   padding: var(--space-sm) var(--space-md);
   background: none;

@@ -12,11 +12,22 @@ interface TabsProps {
   activeId: string;
   onSelect: (id: string) => void;
   'aria-label': string;
+  /** On mobile, split into two rows: first (index+1) tabs on row 1, rest on row 2 right-aligned. Applied when >= 0 and tabs length supports it. */
+  mobileSplitAfterIndex?: number;
 }
 
-export function Tabs({ tabs, activeId, onSelect, 'aria-label': ariaLabel }: TabsProps) {
+export function Tabs({ tabs, activeId, onSelect, 'aria-label': ariaLabel, mobileSplitAfterIndex }: TabsProps) {
+  const split =
+    typeof mobileSplitAfterIndex === 'number' &&
+    mobileSplitAfterIndex >= 0 &&
+    tabs.length > mobileSplitAfterIndex + 1;
+
   return (
-    <div className={styles.tabs} role="tablist" aria-label={ariaLabel}>
+    <div
+      className={`${styles.tabs} ${split ? styles.tabsMobileSplit : ''}`.trim()}
+      role="tablist"
+      aria-label={ariaLabel}
+    >
       <div className={styles.tabList}>
         {tabs.map((tab) => (
           <button

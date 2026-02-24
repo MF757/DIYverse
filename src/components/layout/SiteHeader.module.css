@@ -18,6 +18,13 @@
   gap: var(--space-md);
 }
 
+@media (max-width: 768px) {
+  .container {
+    max-width: none;
+    width: 100%;
+  }
+}
+
 .logo {
   font-weight: 700;
   font-size: 1.25rem;

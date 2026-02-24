@@ -278,6 +278,33 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .sidebarSection[aria-label="Engagement"] {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
+    gap: var(--space-sm);
+  }
+
+  .sidebarSection[aria-label="Engagement"] > *:first-child {
+    grid-column: 1 / span 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 0;
+    gap: var(--space-sm);
+  }
+
+  .sidebarSection[aria-label="Engagement"] .shareBtnSidebar {
+    margin-top: 0;
   }
 }
 

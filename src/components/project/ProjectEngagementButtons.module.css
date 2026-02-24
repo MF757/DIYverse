@@ -16,6 +16,17 @@
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .wrapper.sidebar {
+    width: 100%;
+  }
+
+  .wrapper.sidebar .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
