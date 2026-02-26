@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#2563eb"/>
+  <rect x="48" y="48" width="534" height="534" rx="24" fill="#ffffff" opacity="0.15"/>
+  <text x="600" y="320" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="72" font-weight="700" fill="#ffffff" text-anchor="middle">DIYverse</text>
+  <text x="600" y="400" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="28" fill="rgba(255,255,255,0.9)" text-anchor="middle">DIY projects, shared</text>
+</svg>

@@ -12,7 +12,28 @@
   <meta name="twitter:title" content="DIYverse – DIY projects, shared" />
   <meta name="twitter:description" content="Discover and share DIY projects. Build guides, materials lists, and step-by-step instructions from the maker community." />
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <!-- Favicon: 48x48 meets Google's recommended size for search result display -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="48x48" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+
+  <!-- Organization + logo for Google search (relative URLs work on any domain) -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Organization","name":"DIYverse","url":"/","logo":"/favicon.svg","description":"Discover and share DIY projects. Build guides, materials lists, and step-by-step instructions from the maker community."}
+  </script>
+  <script>
+    (function() {
+      var origin = window.location.origin;
+      var ogImage = origin + '/logo-og.svg';
+      var meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:image');
+      meta.setAttribute('content', ogImage);
+      document.head.appendChild(meta);
+      var twitterImg = document.createElement('meta');
+      twitterImg.setAttribute('name', 'twitter:image');
+      twitterImg.setAttribute('content', ogImage);
+      document.head.appendChild(twitterImg);
+    })();
+  </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7431815557058960"
      crossorigin="anonymous"></script>
