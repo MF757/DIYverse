@@ -97,11 +97,18 @@ export function ProjectDetailPage() {
   }, [ownerId, slug]);
 
   // SEO: title, description, og:image, canonical, JSON-LD (when project is loaded)
+  // Prefer system-set meta_description/seo_title (e.g. from n8n); fall back to author content.
   useEffect(() => {
     if (!project || !ownerId || !slug) return;
     const canonicalPath = `/project/${ownerId}/${slug}`;
-    const title = `${project.title} – DIYverse`;
+    const title =
+      typeof project.seo_title === 'string' && project.seo_title.trim()
+        ? project.seo_title.trim()
+        : `${project.title} – DIYverse`;
     const description = (() => {
+      if (typeof project.meta_description === 'string' && project.meta_description.trim()) {
+        return project.meta_description.trim();
+      }
       const { description: d } = parseDescriptionWithMetadata(project.description ?? null);
       return d && d.trim() ? d.trim() : `DIY project: ${project.title}. View build guide and instructions on DIYverse.`;
     })();
@@ -194,7 +201,10 @@ export function ProjectDetailPage() {
     [dbSteps, parsed?.metadata?.instructionSteps]
   );
   const displayFiles = useMemo(
-    () => (dbFiles.length > 0 ? dbFiles : parsed?.metadata?.fileRefs ?? []),
+    () => {
+      const raw = dbFiles.length > 0 ? dbFiles : parsed?.metadata?.fileRefs ?? [];
+      return raw.filter((f): f is FileRef => Boolean(f && typeof f.path === 'string' && f.path.trim().length > 0));
+    },
     [dbFiles, parsed?.metadata?.fileRefs]
   );
   const componentIdToName = useMemo(() => {
@@ -416,6 +426,7 @@ export function ProjectDetailPage() {
                             className={styles.avatar}
                             width={28}
                             height={28}
+                            decoding="async"
                             onError={() => setAvatarLoadError(true)}
                           />
                         );

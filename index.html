@@ -16,6 +16,12 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="48x48" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 
+  <!-- Resource hints: reduce connection latency for third-party origins (Supabase, AdSense when loaded by AdSlot) -->
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+  <link rel="preconnect" href="https://www.googlesyndication.com" crossorigin />
+  <link rel="dns-prefetch" href="https://www.googlesyndication.com" />
+
   <!-- Organization + logo for Google search (relative URLs work on any domain) -->
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Organization","name":"DIYverse","url":"/","logo":"/favicon.svg","description":"Discover and share DIY projects. Build guides, materials lists, and step-by-step instructions from the maker community."}
@@ -35,8 +41,7 @@
     })();
   </script>
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7431815557058960"
-     crossorigin="anonymous"></script>
+  <!-- AdSense loaded on demand by AdSlot component (only on pages that show ads) to avoid blocking initial load -->
 <meta name="google-site-verification" content="sPbEjfsUnakgMnY88PYPOGNl5UCDEQWErDkIIeQpvdM" />
   
 </head>

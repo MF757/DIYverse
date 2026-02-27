@@ -69,6 +69,7 @@ export function ProjectCard({ project, showEditAction, onEditClick }: ProjectCar
                 alt=""
                 className={styles.coverImg}
                 loading="lazy"
+                decoding="async"
               />
             )}
           </div>

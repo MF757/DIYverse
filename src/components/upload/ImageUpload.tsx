@@ -183,7 +183,7 @@ export function ImageUpload({
           <div className={styles.grid}>
             {images.map((img, idx) => (
               <div key={img.id} className={styles.item}>
-                <img src={img.previewUrl} alt="" className={styles.itemImg} />
+                <img src={img.previewUrl} alt="" className={styles.itemImg} decoding="async" />
                 {idx === thumbnailIndex && (
                   <span className={styles.itemBadge}>Cover</span>
                 )}

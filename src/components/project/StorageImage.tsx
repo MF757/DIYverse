@@ -20,7 +20,13 @@ export function StorageImage({ path, alt = '', className }: StorageImageProps) {
   if (path.startsWith('http')) {
     return (
       <span className={wrapperClass} style={wrapperStyle}>
-        <img src={path} alt={alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <img
+          src={path}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
       </span>
     );
   }
@@ -34,7 +40,13 @@ export function StorageImage({ path, alt = '', className }: StorageImageProps) {
   }
   return (
     <span className={wrapperClass} style={wrapperStyle}>
-      <img src={publicUrl} alt={alt} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <img
+        src={publicUrl}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
     </span>
   );
 }

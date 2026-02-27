@@ -284,6 +284,7 @@ export function ProfilePage() {
               className={styles.avatar}
               width={80}
               height={80}
+              decoding="async"
             />
           ) : (
             <div className={styles.avatarPlaceholder} aria-hidden>
@@ -320,6 +321,7 @@ export function ProfilePage() {
                 className={styles.avatarEditPreview}
                 width={80}
                 height={80}
+                decoding="async"
               />
               <div className={styles.avatarEditActions}>
                 <input

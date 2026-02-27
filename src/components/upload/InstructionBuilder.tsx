@@ -146,6 +146,7 @@ export function InstructionBuilder({
                         src={step.imageUrl}
                         alt=""
                         className={styles.stepImg}
+                        decoding="async"
                       />
                       <button
                         type="button"
