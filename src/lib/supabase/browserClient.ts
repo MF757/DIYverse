@@ -13,10 +13,29 @@ import { config } from '../config.js';
 const CONFIG_MSG =
   'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in a .env file in the project root, then restart the dev server. See .env.example.';
 
+/** Inject preconnect for Supabase origin when URL is available (no build-time env required). */
+function injectSupabasePreconnectIfConfigured(): void {
+  if (!config.supabaseConfigured || !config.supabaseUrlValue) return;
+  try {
+    const origin = new URL(config.supabaseUrlValue).origin;
+    if (!origin || origin === 'null') return;
+    const existing = document.querySelector(`link[rel="preconnect"][href="${origin}"]`);
+    if (existing) return;
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = origin;
+    link.setAttribute('crossorigin', '');
+    document.head.appendChild(link);
+  } catch {
+    // ignore invalid URL
+  }
+}
+
 let supabaseInstance: SupabaseClient<Database>;
 let publicSupabaseInstance: SupabaseClient<Database>;
 
 if (config.supabaseConfigured) {
+  injectSupabasePreconnectIfConfigured();
   supabaseInstance = createClient<Database>(
     config.supabaseUrlValue,
     config.supabaseAnonKeyValue,

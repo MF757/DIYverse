@@ -270,7 +270,7 @@ export function ProjectDetailPage() {
                   <div>
                     {step.imageUrl && (
                       <div className={styles.stepImageWrap}>
-                        <StorageImage path={step.imageUrl} alt="" className={styles.stepImage} />
+                        <StorageImage path={step.imageUrl} alt="" className={styles.stepImage} transform={{ width: 800, quality: 80 }} />
                       </div>
                     )}
                     <p className={styles.stepDescription}>{step.description}</p>
@@ -391,7 +391,12 @@ export function ProjectDetailPage() {
                       </button>
                     </>
                   )}
-                  <StorageImage path={mainImagePath ?? ''} alt="" className={styles.mainImage} />
+                  <StorageImage
+                    path={mainImagePath ?? ''}
+                    alt=""
+                    className={styles.mainImage}
+                    transform={{ width: 1200, quality: 85 }}
+                  />
                 </div>
                 {imageList.length > 0 && (
                   <div className={styles.thumbStripBelow} role="list" aria-label="Image thumbnails">
@@ -405,7 +410,7 @@ export function ProjectDetailPage() {
                         aria-label={`View image ${i + 1}`}
                         aria-current={i === selectedImageIndex ? 'true' : undefined}
                       >
-                        <StorageImage path={path} alt="" className={styles.thumbImg} />
+                        <StorageImage path={path} alt="" className={styles.thumbImg} transform={{ width: 200, quality: 75 }} />
                       </button>
                     ))}
                   </div>

@@ -13,6 +13,8 @@ interface ProjectCardProps {
   showEditAction?: boolean;
   /** Called when user chooses "Edit project" from the dropdown. */
   onEditClick?: (project: ProjectPublicRow) => void;
+  /** When true, image uses loading="eager" and fetchPriority="high" for LCP. */
+  priority?: boolean;
 }
 
 function PencilIcon({ className }: { className?: string }) {
@@ -35,7 +37,7 @@ function PencilIcon({ className }: { className?: string }) {
   );
 }
 
-export function ProjectCard({ project, showEditAction, onEditClick }: ProjectCardProps) {
+export function ProjectCard({ project, showEditAction, onEditClick, priority = false }: ProjectCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -62,14 +64,15 @@ export function ProjectCard({ project, showEditAction, onEditClick }: ProjectCar
         {project.cover_url ? (
           <div className={styles.cover}>
             {useStorage ? (
-              <StorageImage path={project.cover_url} className={styles.coverImg} />
+              <StorageImage path={project.cover_url} className={styles.coverImg} priority={priority} />
             ) : (
               <img
                 src={project.cover_url}
                 alt=""
                 className={styles.coverImg}
-                loading="lazy"
+                loading={priority ? 'eager' : 'lazy'}
                 decoding="async"
+                fetchPriority={priority ? 'high' : undefined}
               />
             )}
           </div>

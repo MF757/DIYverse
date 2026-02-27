@@ -230,22 +230,28 @@ export function HomePage() {
             </div>
           ) : (
             <ul className={styles.grid} role="list">
-              {feedItems.map((item) =>
-                item.type === 'project' ? (
-                  <li key={item.project.id}>
-                    <ProjectCard project={item.project} />
-                  </li>
-                ) : (
-                  <li key={`ad-${item.adIndex}`} className={styles.gridItem}>
-                    {adConfig && (
-                      <AdSlot
-                        config={adConfig}
-                        slotKey={`feed-${item.adIndex}`}
+              {(() => {
+                const firstProjectIndex = feedItems.findIndex((i) => i.type === 'project');
+                return feedItems.map((item, index) =>
+                  item.type === 'project' ? (
+                    <li key={item.project.id}>
+                      <ProjectCard
+                        project={item.project}
+                        priority={index === firstProjectIndex}
                       />
-                    )}
-                  </li>
-                )
-              )}
+                    </li>
+                  ) : (
+                    <li key={`ad-${item.adIndex}`} className={styles.gridItem}>
+                      {adConfig && (
+                        <AdSlot
+                          config={adConfig}
+                          slotKey={`feed-${item.adIndex}`}
+                        />
+                      )}
+                    </li>
+                  )
+                );
+              })()}
             </ul>
           )}
         </Container>
