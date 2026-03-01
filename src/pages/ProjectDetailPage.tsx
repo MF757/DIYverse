@@ -8,7 +8,7 @@ import { StorageImage } from '../components/project/StorageImage';
 import { ProjectEngagementButtons } from '../components/project/ProjectEngagementButtons';
 import { ShareButton } from '../components/project/ShareButton';
 import { CommentSection } from '../components/project/CommentSection';
-import { loadProjectBom, loadProjectInstructionSteps, loadProjectFiles, getProjectFilePublicUrl } from '../lib/projectData';
+import { loadProjectBom, loadProjectInstructionSteps, loadProjectFiles, loadProjectImages, getProjectFilePublicUrl } from '../lib/projectData';
 import { supabase, publicSupabase } from '../lib/supabase/browserClient';
 import { getAvatarSrc } from '../lib/avatar';
 import { setPageMeta, getBaseUrl, buildHowToJsonLd, buildCreativeWorkJsonLd } from '../lib/seo';
@@ -31,6 +31,7 @@ export function ProjectDetailPage() {
   const [dbBom, setDbBom] = useState<MaterialItem[]>([]);
   const [dbSteps, setDbSteps] = useState<InstructionStep[]>([]);
   const [dbFiles, setDbFiles] = useState<FileRef[]>([]);
+  const [dbImagePaths, setDbImagePaths] = useState<string[]>([]);
   const [avatarLoadError, setAvatarLoadError] = useState(false);
 
   useEffect(() => {
@@ -163,15 +164,17 @@ export function ProjectDetailPage() {
     }
     let cancelled = false;
     (async () => {
-      const [bom, steps, files] = await Promise.all([
+      const [bom, steps, files, imagePaths] = await Promise.all([
         loadProjectBom(project.id),
         loadProjectInstructionSteps(project.id),
         loadProjectFiles(project.id),
+        loadProjectImages(project.id),
       ]);
       if (!cancelled) {
         setDbBom(bom);
         setDbSteps(steps);
         setDbFiles(files);
+        setDbImagePaths(imagePaths);
       }
     })();
     return () => { cancelled = true; };
@@ -184,13 +187,16 @@ export function ProjectDetailPage() {
 
   const imageList = useMemo(() => {
     const list: string[] = [];
+    if (dbImagePaths.length > 0) {
+      return [...dbImagePaths];
+    }
     if (project?.cover_url) list.push(project.cover_url);
     const metaUrls = parsed?.metadata?.imageUrls ?? [];
     for (const u of metaUrls) {
       if (u && !list.includes(u)) list.push(u);
     }
     return list;
-  }, [project?.cover_url, parsed?.metadata?.imageUrls]);
+  }, [dbImagePaths, project?.cover_url, parsed?.metadata?.imageUrls]);
 
   const displayBom = useMemo(
     () => (dbBom.length > 0 ? dbBom : parsed?.metadata?.materials ?? []),

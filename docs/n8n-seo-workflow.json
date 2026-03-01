@@ -1,0 +1,167 @@
+{
+  "name": "DIYverse project SEO",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "diyverse-project-seo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "diyverse-seo"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst record = body.record || {};\nconst id = typeof record.id === 'string' ? record.id.trim() : '';\nconst title = typeof record.title === 'string' ? record.title : 'Project';\nconst rawDesc = typeof record.description === 'string' ? record.description : '';\nconst desc = rawDesc.replace(/\\s+/g, ' ').trim();\nconst maxLen = 160;\nconst metaDescription = id && desc.length > 0\n  ? (desc.length <= maxLen ? desc : desc.slice(0, maxLen - 1).replace(/\\s+\\S*$/, '') || desc.slice(0, maxLen))\n  : id\n    ? `DIY project: ${title}. View build guide and instructions on DIYverse.`\n    : '';\nreturn [{ json: { project_id: id, meta_description: metaDescription } }];\n"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Build meta description",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-project-id",
+              "leftValue": "={{ $json.project_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Has project ID",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dtvumpeiyfhkoatuqjmt.supabase.co/functions/v1/update-project-seo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-seo-api-key",
+              "value": "=0YtVEG4k9BRqsm5B3qoYVjLJF8eE4n7TOY0eRtDBymk="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"project_id\": \"{{ $json.project_id }}\",\n  \"meta_description\": \"{{ $json.meta_description }}\"\n}"
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Update project SEO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true } }}"
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1060, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"reason\": \"no_project_id\" } }}"
+      },
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Respond (no id)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build meta description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build meta description": {
+      "main": [
+        [
+          {
+            "node": "Has project ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has project ID": {
+      "main": [
+        [
+          {
+            "node": "Update project SEO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond (no id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update project SEO": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

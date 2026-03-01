@@ -64,6 +64,8 @@ export interface Database {
           is_public: boolean;
           created_at: string;
           updated_at: string;
+          meta_description: string | null;
+          seo_title: string | null;
         };
         Insert: {
           id?: string;
@@ -75,6 +77,8 @@ export interface Database {
           is_public?: boolean;
           created_at?: string;
           updated_at?: string;
+          meta_description?: string | null;
+          seo_title?: string | null;
         };
         Update: {
           id?: string;
@@ -86,6 +90,8 @@ export interface Database {
           is_public?: boolean;
           created_at?: string;
           updated_at?: string;
+          meta_description?: string | null;
+          seo_title?: string | null;
         };
       };
       project_components: {
@@ -186,6 +192,29 @@ export interface Database {
           created_at?: string;
         };
       };
+      project_images: {
+        Row: {
+          id: string;
+          project_id: string;
+          sort_order: number;
+          storage_path: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          sort_order?: number;
+          storage_path: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          sort_order?: number;
+          storage_path?: string;
+          created_at?: string;
+        };
+      };
       project_comments: {
         Row: {
           id: string;
@@ -247,6 +276,8 @@ export interface Database {
           updated_at: string;
           owner_display_name: string | null;
           owner_avatar_url: string | null;
+          meta_description: string | null;
+          seo_title: string | null;
         };
       };
     };

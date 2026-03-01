@@ -19,6 +19,8 @@ Connect your GitHub repo to Vercel so every push can deploy automatically.
    - **Output Directory:** `dist`  
    - **Install Command:** `npm install`  
 
+   Node version is taken from `package.json` (`engines.node`, e.g. `>=20.0.0`).
+
 4. **Add environment variables**  
    In the same screen, open **Environment Variables** and add:
 
@@ -77,6 +79,15 @@ Use this whenever you change code and want the live site to update. Steps use st
 `git status` → `git add ...` → `git commit -m "..."` → `git push origin main` → check Vercel dashboard until the deployment is **Ready**.
 
 ---
+
+## After database/schema changes
+
+If you added new Supabase migrations (e.g. new tables like `project_images`), run them on your hosted Supabase project so the app stays in sync:
+
+- **Supabase Dashboard:** SQL Editor → run the new migration files in order, or  
+- **CLI:** `supabase db push` (with your project linked).
+
+Then trigger a new Vercel deploy (push a commit or use **Redeploy** in the Vercel dashboard).
 
 ## 2. Optional: Deploy from the CLI
 

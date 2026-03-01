@@ -220,7 +220,7 @@
 .thumbBelow .thumbImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -373,8 +373,9 @@
 .galleryImg {
   width: 100%;
   aspect-ratio: 1;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: var(--radius);
+  background: var(--color-bg);
 }
 
 /* Instructions tab */

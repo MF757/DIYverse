@@ -3,6 +3,8 @@
  * Path convention: <project_id>/images/<filename> | <project_id>/files/<filename>
  */
 
+export const PROJECT_ASSETS_BUCKET = 'project-assets';
+
 export function getStoragePath(projectId: string, type: 'images' | 'files', filename: string): string {
   return `${projectId}/${type}/${filename}`;
 }

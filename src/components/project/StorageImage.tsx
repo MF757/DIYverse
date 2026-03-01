@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase/browserClient';
-import { isStoragePath } from '../../lib/storage';
+import { isStoragePath, PROJECT_ASSETS_BUCKET } from '../../lib/storage';
 
-const BUCKET = 'project-assets';
+const BUCKET = PROJECT_ASSETS_BUCKET;
 
 /** Optional resize/quality for Supabase image transformation (Pro; smaller payload, better LCP). */
 export interface StorageImageTransform {
@@ -52,7 +52,7 @@ export function StorageImage({
           loading={loading}
           decoding="async"
           fetchPriority={fetchPriority}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
         />
       </span>
     );
@@ -64,7 +64,7 @@ export function StorageImage({
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path, {
     transform: transformFailed
       ? undefined
-      : { width: transformOpts.width, quality: transformOpts.quality ?? 80, resize: 'cover' },
+      : { width: transformOpts.width, quality: transformOpts.quality ?? 80, resize: 'contain' },
   });
   const displayUrl = data?.publicUrl ?? '';
   if (!displayUrl) {
@@ -85,7 +85,7 @@ export function StorageImage({
         width={imgWidth}
         height={imgHeight}
         onError={transformFailed ? undefined : () => setTransformFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
       />
     </span>
   );

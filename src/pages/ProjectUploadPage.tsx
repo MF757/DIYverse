@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase/browserClient';
-import { getStoragePath } from '../lib/storage';
+import { getStoragePath, PROJECT_ASSETS_BUCKET } from '../lib/storage';
 import { Container, Button, Input, Textarea } from '../components/ui';
 import { ImageUpload } from '../components/upload/ImageUpload';
 import { TagInput } from '../components/upload/TagInput';
@@ -24,13 +24,13 @@ import {
   loadProjectBom,
   loadProjectInstructionSteps,
   loadProjectFiles,
+  loadProjectImages,
   saveProjectBom,
   saveProjectInstructionSteps,
   saveProjectFiles,
+  saveProjectImages,
 } from '../lib/projectData';
 import styles from './ProjectUploadPage.module.css';
-
-const PROJECT_ASSETS_BUCKET = 'project-assets';
 
 const DRAFT_KEY = 'diyverse-project-draft';
 
@@ -207,7 +207,18 @@ export function ProjectUploadPage() {
         instructionFileRef: null,
         fileRefs: [],
       };
-      const imageUrls: string[] = Array.isArray(meta.imageUrls) ? meta.imageUrls.filter((u): u is string => typeof u === 'string') : [];
+      const [dbImages, dbMaterials, dbSteps, dbFiles] = await Promise.all([
+        loadProjectImages(project.id),
+        loadProjectBom(project.id),
+        loadProjectInstructionSteps(project.id),
+        loadProjectFiles(project.id),
+      ]);
+      const imageUrls: string[] =
+        dbImages.length > 0
+          ? dbImages
+          : Array.isArray(meta.imageUrls)
+            ? meta.imageUrls.filter((u): u is string => typeof u === 'string')
+            : [];
       const existingImages: ImageFile[] = imageUrls.map((path) => {
         const { data } = supabase.storage.from(PROJECT_ASSETS_BUCKET).getPublicUrl(path);
         return {
@@ -225,11 +236,6 @@ export function ProjectUploadPage() {
             imageUrl: s.imageUrl != null && typeof s.imageUrl === 'string' ? s.imageUrl : null,
           }))
         : [];
-      const [dbMaterials, dbSteps, dbFiles] = await Promise.all([
-        loadProjectBom(project.id),
-        loadProjectInstructionSteps(project.id),
-        loadProjectFiles(project.id),
-      ]);
       const materials: MaterialItem[] =
         dbMaterials.length > 0
           ? dbMaterials.map((m) => ({
@@ -395,7 +401,7 @@ export function ProjectUploadPage() {
     for (const pf of form.files) {
       const name = uniqueFilename(pf.file.name);
       const path = getStoragePath(projectId, 'files', name);
-      const { error: e } = await supabase.storage.from('project-assets').upload(path, pf.file, { upsert: true });
+      const { error: e } = await supabase.storage.from(PROJECT_ASSETS_BUCKET).upload(path, pf.file, { upsert: true });
       if (!e) {
         metadata.fileRefs.push({ id: crypto.randomUUID(), name: pf.file.name, path, type: pf.type });
       }
@@ -405,7 +411,7 @@ export function ProjectUploadPage() {
       const name = uniqueFilename(form.customInstructionFile.name);
       const path = getStoragePath(projectId, 'files', name);
       const { error: e } = await supabase.storage
-        .from('project-assets')
+        .from(PROJECT_ASSETS_BUCKET)
         .upload(path, form.customInstructionFile, { upsert: true });
       if (!e) metadata.instructionFileRef = { path, name };
     }
@@ -417,7 +423,7 @@ export function ProjectUploadPage() {
         if (file) {
           const name = uniqueFilename(file.name);
           const path = getStoragePath(projectId, 'images', `step-${i}-${name}`);
-          const { error: e } = await supabase.storage.from('project-assets').upload(path, file, { upsert: true });
+          const { error: e } = await supabase.storage.from(PROJECT_ASSETS_BUCKET).upload(path, file, { upsert: true });
           if (!e) {
             metadata.instructionSteps[i] = { ...step, imageUrl: path };
           }
@@ -447,6 +453,13 @@ export function ProjectUploadPage() {
       .update(updatePayload)
       .eq('id', projectId);
 
+    const imagesError = await saveProjectImages(projectId, metadata.imageUrls);
+    if (imagesError) {
+      setError(imagesError);
+      setSubmitting(false);
+      return;
+    }
+
     const componentIdMap = await saveProjectBom(projectId, form.materials.filter((m) => m.name.trim()));
     if (form.instructionMode === 'maker' && form.instructionSteps.length > 0) {
       await saveProjectInstructionSteps(projectId, form.instructionSteps, componentIdMap);
@@ -457,7 +470,12 @@ export function ProjectUploadPage() {
       ...existingFileRefs.map((f) => ({ id: f.id, name: f.name, path: f.path, type: f.type as FileRef['type'] })),
       ...metadata.fileRefs,
     ];
-    await saveProjectFiles(projectId, allFileRefs);
+    const filesError = await saveProjectFiles(projectId, allFileRefs);
+    if (filesError) {
+      setError(filesError);
+      setSubmitting(false);
+      return;
+    }
 
     if (!editProjectId) localStorage.removeItem(DRAFT_KEY);
     setSubmitting(false);
